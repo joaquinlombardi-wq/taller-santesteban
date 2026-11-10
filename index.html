@@ -459,6 +459,28 @@ button.inicio-card:hover { border-color: var(--tx); }
   .ficha-tecnica input, .ficha-tecnica textarea { border: 0; padding: 2px 0; }
   .ft-fila .quitar { display: none; }
 }
+
+/* Radar: novedades y tendencias */
+.radar-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 22px; }
+.radar-barra .estado { flex: 1 1 220px; }
+.radar-barra .barrita { flex: 1 1 100%; margin: 0; }
+.barrita.fija i { animation: none; transition: width .4s ease; }
+.filtro-marcas { margin: 0 0 20px; max-width: 280px; }
+.novedades { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 26px 16px; }
+.nove { display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: var(--tx); }
+.nove-foto { aspect-ratio: 1; background: #F4F4F4; display: grid; place-items: center; overflow: hidden; position: relative; }
+.nove-foto img { width: 100%; height: 100%; object-fit: contain; }
+.nove .etiqueta { margin-top: 6px; }
+.nove b { font-weight: 400; font-size: 13px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nove small { color: var(--mu); font-size: 11.5px; }
+.sello-nuevo { position: absolute; top: 8px; left: 8px; background: #000; color: #fff; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; padding: 3px 6px; }
+.tendencias { display: flex; flex-direction: column; border-top: 1px solid var(--tx); max-width: 640px; }
+.tendencia { padding: 12px 0; border-bottom: 1px solid var(--li); display: flex; flex-direction: column; gap: 7px; }
+.tendencia div { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.tendencia span { color: var(--mu); font-size: 12px; white-space: nowrap; }
+.tendencia .barrita { margin: 0; }
+.marcas small.nota { display: block; }
+@media (max-width: 600px) { .novedades { grid-template-columns: 1fr 1fr; gap: 20px 12px; } }
 </style>
 </head>
 <body>
@@ -659,7 +681,7 @@ button.inicio-card:hover { border-color: var(--tx); }
   const sb = window.supabase.createClient(C.url, C.clave, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: almacen },
   });
-  const COLECCIONES = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas", "fichas", "marcas"];
+  const COLECCIONES = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas", "fichas", "marcas", "novedades", "radar"];
   const W = { sesion: null, yo: null, miembros: [], datos: new Map(), oyentes: new Map(), alCambiar: new Set(), suscripto: false };
   COLECCIONES.forEach((c) => W.datos.set(c, new Map()));
   let abrirTaller;
@@ -960,6 +982,16 @@ button.inicio-card:hover { border-color: var(--tx); }
     alCambiar(f) { W.alCambiar.add(f); },
     async sumar(d) { const r = await funcion("sumar", d); await cargarMiembros(); return r; },
     async cambiar(email, cambios) { await funcion("cambiar", { email, ...cambios }); await cargarMiembros(); },
+    // Radar de marcas: empieza a leer las webs (sigue solo en el servidor; el avance llega por radar/estado)
+    async actualizarRadar() {
+      const { data, error } = await sb.functions.invoke("radar", { body: { accion: "actualizar" } });
+      if (error) {
+        let d = {};
+        try { d = await error.context?.json?.(); } catch (_) { /* sin detalle */ }
+        throw Object.assign(new Error(d?.error || error.message), { mensaje: d?.error === "sin_marcas" ? "Primero sumá las marcas que seguís." : d?.error === "permiso" ? "No tenés permiso para actualizar el radar." : "No se pudo empezar; probá de nuevo en un rato." });
+      }
+      return data;
+    },
     // Borrador de la ficha técnica: el dibujante mira la foto del diseño (devuelve null si no pudo)
     async armarFicha(versionId) {
       const { data, error } = await sb.functions.invoke("dibujar", { body: { accion: "ficha", version: versionId } });
@@ -1250,8 +1282,8 @@ button.inicio-card:hover { border-color: var(--tx); }
     ideas: "Ideas de Claude", nota: "Nota"
   };
   const S = {
-    proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [], fichas: [], marcas: [],
-    revision: null, iTab: null, fichaSel: null, fichaSucia: false,
+    proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [], fichas: [], marcas: [], novedades: [], radar: [],
+    revision: null, iTab: null, iMarca: "", fichaSel: null, fichaSucia: false,
     listos: new Set(), tab: "inicio", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
     db: null, assets: null, user: null, sample: null, downloads: null, yo: "", puede: null, nombres: {}, cargaFallo: false
   };
@@ -1292,7 +1324,7 @@ button.inicio-card:hover { border-color: var(--tx); }
   const escribe = () => !!S.db && S.puede !== false;
   const proyectosOrdenados = () => [...S.proyectos].sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99) || porFecha(a, b));
   const ordenVersiones = (a, b) => (b.ronda || 0) - (a.ronda || 0) || porFecha(a, b);
-  const COLS = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas", "fichas", "marcas"];
+  const COLS = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas", "fichas", "marcas", "novedades", "radar"];
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
   const ICONO = {
     cerrar: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
@@ -1775,9 +1807,11 @@ button.inicio-card:hover { border-color: var(--tx); }
         ${camino.some((x) => x.estado === "en_proceso") ? `<div class="barrita"><i></i></div>` : ""}
         ${camino.length > 3 ? `<button class="mas" data-tab="pedidos" style="align-self:flex-start;margin-top:8px">Ver todos</button>` : ""}
       </section>` : "";
+    const est = estadoRadar();
+    const semana = S.novedades.filter((n) => Date.parse(n.visto || 0) > Date.now() - 7 * DIA).length;
     const inspiracion = `<button class="inicio-card fila-card" data-tab="inspiracion"><span><span class="etiqueta">Inspiración</span>
-        <b>${nm ? `${nm} marca${nm === 1 ? "" : "s"} en el radar` : "Sumá las marcas que seguís"}</b>
-        <small>${nm ? "Pronto vas a poder ver sus novedades desde acá." : "Para ver qué están sacando y qué se repite."}</small></span>${FLECHA}</button>`;
+        <b>${!nm ? "Sumá las marcas que seguís" : S.novedades.length ? `${semana || S.novedades.length} novedades ${semana ? "esta semana" : "en el radar"} · ${nm} marca${nm === 1 ? "" : "s"}` : `${nm} marca${nm === 1 ? "" : "s"} en el radar`}</b>
+        <small>${!nm ? "Para ver qué están sacando y qué se repite." : radarAndando(est) ? "Se está actualizando ahora." : est?.terminado ? `Actualizado ${hace(est.terminado)}.` : "Tocá «Actualizar información» para traer sus novedades."}</small></span>${FLECHA}</button>`;
     const fichas = fb.length ? `<button class="inicio-card fila-card" data-tab="produccion"><span><span class="etiqueta">Fichas por completar · ${fb.length}</span>
         <b>${esc(juntar(fb.slice(0, 3).map((f) => f.nombre)))}${fb.length > 3 ? ` y ${fb.length - 3} más` : ""}</b>
         <small>Revisá medidas, materiales y herrajes antes de mandarlas.</small></span>${FLECHA}</button>` : "";
@@ -1922,21 +1956,87 @@ button.inicio-card:hover { border-color: var(--tx); }
   }
 
   // ---------- Inspiración: el radar de marcas ----------
+  const DIA = 864e5;
+  function hace(iso) {
+    const d = (Date.now() - Date.parse(iso || 0)) / DIA;
+    if (!isFinite(d)) return "";
+    if (d < 1 / 24) return "recién";
+    if (d < 1) return `hace ${Math.max(1, Math.round(d * 24))} h`;
+    if (d < 2) return "ayer";
+    return `hace ${Math.round(d)} días`;
+  }
+  const estadoRadar = () => S.radar.find((d) => d.id === "estado") || null;
+  const radarAndando = (est) => est?.estado === "actualizando" && Date.now() - Date.parse(est.actualizado || est.empezado || 0) < 5 * 60e3;
+  const precioTexto = (n) => (n?.precio ? `${n.moneda === "USD" ? "US$" : n.moneda === "EUR" ? "€" : "$"} ${Number(n.precio).toLocaleString("es-AR")}` : "");
+  const mayus = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : "");
+  const TIPO_PLURAL = { "cartera de mano": "carteras de mano", tote: "totes", bandolera: "bandoleras", hobo: "hobos", bucket: "buckets", baguette: "baguettes", clutch: "clutches", mochila: "mochilas", "riñonera": "riñoneras", billetera: "billeteras", "cinturón": "cinturones", calzado: "calzado" };
+  const ICONO_ACT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>`;
+  function tendencias() {
+    const desde = Date.now() - 60 * DIA;
+    const novs = S.novedades.filter((n) => n.analisis && n.analisis.por !== "nada" && Date.parse(n.visto || 0) > desde);
+    const marcas = new Set(novs.map((n) => n.marca));
+    const cuenta = new Map();
+    const sumar = (k, m) => { if (!cuenta.has(k)) cuenta.set(k, new Set()); cuenta.get(k).add(m); };
+    for (const n of novs) {
+      const a = n.analisis;
+      const color = (a.colores || [])[0];
+      const herraje = (a.herrajes || []).find((h) => h !== "sin herrajes");
+      if (color) sumar(`Color ${color}`, n.marca);
+      (a.materiales || []).forEach((x) => sumar(mayus(x), n.marca));
+      if (herraje) sumar(`Herraje ${herraje}`, n.marca);
+      if (a.tipo && a.tipo !== "otro") sumar(mayus(TIPO_PLURAL[a.tipo] || a.tipo), n.marca);
+      if (a.forma && a.forma !== "otra") sumar(`Forma ${a.forma}`, n.marca);
+      if (color && herraje) sumar(`${mayus(color)} con herraje ${herraje}`, n.marca);
+    }
+    const minimo = marcas.size >= 3 ? 2 : 1;
+    const filas = [...cuenta].map(([k, s]) => [k, s.size]).filter(([, c]) => c >= minimo).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es")).slice(0, 12);
+    return { filas, marcas: marcas.size, novedades: novs.length };
+  }
   function vInspiracion() {
     const ms = [...S.marcas].sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
     const tab = S.iTab || (S.iTab = ms.length ? "novedades" : "marcas");
+    const est = estadoRadar();
+    const andando = radarAndando(est);
     const pest = (k, n) => `<button data-accion="iTab" data-f="${k}" aria-pressed="${tab === k}">${n}</button>`;
     const cabeza = `<div class="cabeza"><h1>Inspiración</h1><p>El radar de las marcas que seguís: qué están sacando y qué se repite entre ellas. Sirve para leer tendencias (colores, materiales, formas), no para copiar modelos.</p></div>
-      <div class="filtros" role="group" aria-label="Qué ver">${pest("novedades", "Novedades")}${pest("tendencias", "Tendencias")}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
+      <div class="filtros" role="group" aria-label="Qué ver">${pest("novedades", `Novedades · ${S.novedades.length}`)}${pest("tendencias", "Tendencias")}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
+    const barra = ms.length ? `<div class="radar-barra">
+        ${escribe() && window.tallerWeb ? `<button class="btn" data-accion="actualizarRadar" ${andando ? "disabled" : ""}>${ICONO_ACT}${andando ? "Actualizando…" : "Actualizar información"}</button>` : ""}
+        <span class="estado">${andando ? `Leyendo las webs: ${est.hechas || 0} de ${est.total || ms.length} marcas${est.nuevas ? ` · ${est.nuevas} novedades nuevas` : ""}. Podés seguir usando el taller.` : est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}` : "Todavía no se actualizó."}</span>
+        ${andando ? `<div class="barrita fija"><i style="width:${Math.max(4, Math.round(100 * (est.hechas || 0) / Math.max(1, est.total || 1)))}%"></i></div>` : ""}
+        ${!andando && est?.nota ? `<p class="estado" style="flex-basis:100%">${esc(est.nota)}</p>` : ""}
+      </div>` : "";
     if (tab === "marcas") {
-      const fila = (m) => `<li><div><b>${esc(m.nombre)}</b>${m.web ? `<small><a href="${esc(m.web)}" target="_blank" rel="noopener noreferrer">${esc(String(m.web).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></small>` : ""}</div>${escribe() ? `<button class="quitar" data-accion="borrarMarca" data-id="${esc(m.id)}" aria-label="Sacar ${esc(m.nombre)}" title="Sacar">×</button>` : ""}</li>`;
+      const fila = (m) => {
+        const r = est?.porMarca?.[m.id];
+        const nota = !r ? "Todavía sin leer." : r.estado === "ok" ? `${r.total} novedades${r.nuevas && r.primera !== r.cuando ? ` · ${r.nuevas} nuevas` : ""} · leída ${hace(r.cuando)}` : r.nota;
+        return `<li><div><b>${esc(m.nombre)}</b>${m.web ? `<small><a href="${esc(m.web)}" target="_blank" rel="noopener noreferrer">${esc(String(m.web).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></small>` : ""}<small class="nota">${esc(nota)}</small></div>${escribe() ? `<button class="quitar" data-accion="borrarMarca" data-id="${esc(m.id)}" aria-label="Sacar ${esc(m.nombre)}" title="Sacar">×</button>` : ""}</li>`;
+      };
       const form = escribe() ? `<form class="agregar marca-nueva" data-form="marca"><input type="text" name="nombre" required maxlength="60" placeholder="Nombre de la marca" aria-label="Nombre de la marca"><input type="text" name="web" maxlength="200" inputmode="url" autocapitalize="off" placeholder="Su web (ej.: marca.com)" aria-label="Web de la marca"><button class="btn prim" type="submit">Sumar</button></form>` : "";
-      return cabeza + (ms.length ? `<ul class="marcas">${ms.map(fila).join("")}</ul>` : `<div class="vacio">Todavía no hay marcas. Sumá la primera: con 10 a 15 alcanza.</div>`) + form;
+      return cabeza + barra + (ms.length ? `<ul class="marcas">${ms.map(fila).join("")}</ul>` : `<div class="vacio">Todavía no hay marcas. Sumá la primera: con 10 a 15 alcanza.</div>`) + form
+        + `<p class="estado" style="margin-top:14px">Conviene cargar la web de la tienda (o su página de novedades). El radar respeta lo que cada web permite: si alguna no deja que la lean programas, lo avisa acá.</p>`;
     }
-    const texto = ms.length
-      ? `Ya hay ${ms.length} marca${ms.length === 1 ? "" : "s"} en el radar. Estamos terminando el botón «Actualizar información»: cuando esté, ${tab === "novedades" ? "acá van a aparecer sus novedades, con foto, nombre y precio" : "acá va a aparecer lo que más se repite entre ellas"}.`
-      : "Primero sumá las marcas que seguís, en «Marcas».";
-    return cabeza + `<div class="vacio">${texto}</div>`;
+    if (!ms.length) return cabeza + `<div class="vacio">Primero sumá las marcas que seguís, en «Marcas».</div>`;
+    if (tab === "tendencias") {
+      const t = tendencias();
+      if (!t.filas.length) return cabeza + barra + `<div class="vacio">${S.novedades.length ? "Todavía no hay suficientes novedades anotadas. Se completan solas en las próximas actualizaciones." : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`;
+      const max = Math.max(...t.filas.map(([, c]) => c));
+      return cabeza + barra + `<div class="tendencias">${t.filas.map(([k, c]) => `<div class="tendencia"><div><b style="font-weight:400">${esc(k)}</b><span>${c} de ${t.marcas} marca${t.marcas === 1 ? "" : "s"}</span></div><div class="barrita fija"><i style="width:${Math.round(100 * c / max)}%"></i></div></div>`).join("")}</div>
+        <p class="estado" style="margin-top:14px">Sale de ${t.novedades} novedades de los últimos 60 días.${t.marcas < 3 ? " Con más marcas, las tendencias se leen mejor." : ""}</p>`;
+    }
+    const conNovedades = ms.filter((m) => S.novedades.some((n) => n.marca === m.id));
+    const filtro = conNovedades.length > 1 ? `<select class="filtro-marcas" data-accion="iMarca" aria-label="Filtrar por marca"><option value="">Todas las marcas</option>${conNovedades.map((m) => `<option value="${esc(m.id)}" ${S.iMarca === m.id ? "selected" : ""}>${esc(m.nombre)} · ${S.novedades.filter((n) => n.marca === m.id).length}</option>`).join("")}</select>` : "";
+    const novs = S.novedades.filter((n) => !S.iMarca || n.marca === S.iMarca).sort((a, b) => String(b.visto || "").localeCompare(String(a.visto || "")) || String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
+    const nueva = (n) => { const r = est?.porMarca?.[n.marca]; return r?.primera && Date.parse(n.visto || 0) - Date.parse(r.primera) > 6e4 && Date.parse(n.visto || 0) > Date.now() - 14 * DIA; };
+    const tarjeta = (n) => {
+      const a = n.analisis || {};
+      const notas = [a.tipo && a.tipo !== "otro" ? a.tipo : "", (a.colores || [])[0] || "", (a.materiales || [])[0] || ""].filter(Boolean).join(" · ");
+      return `<a class="nove" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+        <span class="nove-foto">${n.foto ? `<img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}${nueva(n) ? `<span class="sello-nuevo">Nuevo</span>` : ""}</span>
+        <span class="etiqueta">${esc(n.marcaNombre || "")}</span><b>${esc(n.nombre)}</b>
+        ${precioTexto(n) ? `<small>${esc(precioTexto(n))}</small>` : ""}${notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
+    };
+    return cabeza + barra + filtro + (novs.length ? `<div class="novedades">${novs.map(tarjeta).join("")}</div>` : `<div class="vacio">${andando ? "Leyendo las webs de las marcas…" : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`);
   }
 
   // ---------- Ventas (con Tienda Nube) ----------
@@ -2275,9 +2375,18 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
       }
       else if (a === "fichaImprimir") window.print();
       else if (a === "iTab") { S.iTab = el.dataset.f; render(); }
+      else if (a === "actualizarRadar") {
+        el.disabled = true;
+        try { const r = await window.tallerWeb.actualizarRadar(); avisar(r?.ya ? "Ya se está actualizando" : "Actualizando: puede tardar unos minutos"); }
+        catch (e) { el.disabled = false; throw e; }
+      }
       else if (a === "borrarMarca") {
         const m = S.marcas.find((x) => x.id === id);
-        if (m && confirm(`¿Sacar ${m.nombre} del radar?`)) { await S.db.collection("marcas").doc(id).delete(); avisar("Marca sacada"); }
+        if (m && confirm(`¿Sacar ${m.nombre} del radar? También se borran sus novedades.`)) {
+          await S.db.collection("marcas").doc(id).delete();
+          for (const n of S.novedades.filter((x) => x.marca === id)) await S.db.collection("novedades").doc(n.id).delete();
+          avisar("Marca sacada");
+        }
       }
       else if (a === "copiarAviso") {
         const campo = $("#ventana .link-copiar");
@@ -2300,6 +2409,7 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
       return;
     }
     if (ev.target.matches("[data-accion='hModelo']")) { S.hModelo = ev.target.value; render(); }
+    if (ev.target.matches("[data-accion='iMarca']")) { S.iMarca = ev.target.value; render(); }
     if (ev.target.matches("form[data-form='variaciones'] input[name='cambia']")) {
       $("#varOpciones").innerHTML = opcionesVariar(ev.target.value);
       contarVariaciones(ev.target.form);
