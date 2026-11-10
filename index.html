@@ -316,6 +316,149 @@ body.con-acceso .app { visibility: hidden; }
   .equipo .fila { justify-content: flex-start; }
   .sumar { grid-template-columns: 1fr; }
 }
+
+/* ---------- Menú nuevo: Inicio, Inspiración, Diseños, Producción, Ventas y el cerebro; en el celular, barra abajo ---------- */
+.menu-sep { height: 1px; background: var(--li); margin: 10px 0; }
+.abajo { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--bg);
+  border-top: 1px solid var(--li); padding: 6px max(4px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left)); }
+.abajo button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; background: none; padding: 6px 0 2px; cursor: pointer;
+  color: var(--mu); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; min-width: 0; }
+.abajo button span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; border-bottom: 1px solid transparent; }
+.abajo button[aria-current="page"] { color: var(--tx); }
+.abajo button[aria-current="page"] span { border-bottom-color: var(--tx); }
+.abajo svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.aviso-punto { position: absolute; top: 4px; left: calc(50% + 8px); width: 7px; height: 7px; border-radius: 50%; background: var(--tx); }
+body.en-revision { overflow: hidden; }
+body.en-revision .abajo { display: none !important; }
+.btn svg, .fila-card svg, .rev-cerrar svg, .rev-flecha svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn.grande { justify-content: center; padding: 14px 18px; width: 100%; }
+.mas-lista { display: flex; flex-direction: column; border-top: 1px solid var(--tx); }
+.mas-item { display: flex; justify-content: space-between; align-items: center; border: 0; border-bottom: 1px solid var(--li); background: none; padding: 16px 2px; cursor: pointer;
+  text-align: left; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--tx); }
+.mas-cuenta { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.mas-cuenta span { font-size: 13px; color: var(--mu); }
+.enlace { cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Inicio */
+.inicio { max-width: 640px; display: flex; flex-direction: column; gap: 12px; }
+.inicio-cabeza { margin: 0 0 14px; }
+.inicio-cabeza h1 { font-weight: 400; font-size: 30px; line-height: 1.15; letter-spacing: .06em; text-transform: uppercase; margin: 8px 0 0; }
+.inicio-card { border: 1px solid var(--li); padding: 16px; display: flex; flex-direction: column; gap: 6px; background: var(--bg); color: var(--tx); text-align: left; width: 100%; font: inherit; }
+button.inicio-card { cursor: pointer; }
+button.inicio-card:hover { border-color: var(--tx); }
+.inicio-card b { font-weight: 400; font-size: 16px; }
+.inicio-card p, .inicio-card small { margin: 0; color: var(--mu); font-size: 12.5px; }
+.inicio-card.negra { background: var(--inv-bg); color: var(--inv-tx); border-color: var(--inv-bg); }
+.inicio-card.negra .etiqueta { color: inherit; opacity: .65; }
+.inicio-card.negra .btn.prim { background: var(--inv-tx); color: var(--inv-bg); border-color: var(--inv-tx); }
+.inicio-fila { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.inicio-fila b { display: block; margin-top: 4px; }
+.inicio-num { font-size: 34px; line-height: 1; }
+.inicio-fotos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 10px 0 6px; }
+.inicio-fotos span { aspect-ratio: 1; background: #F4F4F4; display: grid; place-items: center; overflow: hidden; }
+.inicio-fotos img { width: 100%; height: 100%; object-fit: contain; }
+.fila-card { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+.fila-card > span { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fila-card svg { color: var(--mu); }
+.inicio-pedido { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 12px; align-items: center; border: 0; background: none; padding: 8px 0 0; text-align: left; cursor: pointer; color: inherit; font: inherit; width: 100%; }
+.inicio-pedido b { font-size: 14px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini { width: 48px; height: 48px; background: var(--foto); display: grid; place-items: center; overflow: hidden; }
+.mini img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.barrita { height: 2px; background: var(--li); overflow: hidden; margin-top: 10px; }
+.barrita i { display: block; height: 100%; width: 40%; background: var(--tx); animation: barrita 1.6s ease-in-out infinite; }
+@keyframes barrita { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+@media (prefers-reduced-motion: reduce) { .barrita i { animation: none; width: 100%; opacity: .4; } }
+
+/* Revisar de a una */
+.revision { position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 620px; z-index: 18; background: var(--bg); display: flex; flex-direction: column; }
+@media (min-width: 621px) { .revision { border-left: 1px solid var(--li); border-right: 1px solid var(--li); } body.en-revision::before { content: ""; position: fixed; inset: 0; background: var(--velo); z-index: 17; } }
+.rev-arriba { display: grid; grid-template-columns: 70px minmax(0, 1fr) 70px; align-items: center; padding: max(8px, env(safe-area-inset-top)) 12px 8px; flex: none; }
+.rev-arriba span { text-align: center; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--mu); }
+.rev-cerrar { border: 0; background: none; cursor: pointer; color: var(--tx); padding: 8px; justify-self: start; }
+.rev-ver { border: 0; background: none; cursor: pointer; color: var(--tx); justify-self: end; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; border-bottom: 1px solid var(--tx); padding: 0 0 2px; }
+.rev-foto { position: relative; flex: 1 1 auto; min-height: 180px; background: #F4F4F4; margin: 0 16px; display: grid; place-items: center; overflow: hidden; touch-action: pan-y; }
+.rev-foto img { width: 100%; height: 100%; object-fit: contain; }
+.rev-flecha { position: absolute; top: 50%; transform: translateY(-50%); border: 0; background: rgba(255, 255, 255, .75); width: 40px; height: 40px; cursor: pointer; color: #000; display: grid; place-items: center; }
+.rev-flecha.izq { left: 8px; }
+.rev-flecha.der { right: 8px; }
+.rev-puntos { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+.rev-puntos i { width: 6px; height: 6px; border-radius: 50%; background: #000; opacity: .2; }
+.rev-puntos i.si { opacity: .8; }
+.rev-info { padding: 14px 16px 4px; display: flex; flex-direction: column; gap: 8px; flex: none; }
+.rev-info h2 { font-weight: 400; font-size: 20px; line-height: 1.2; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.rev-info .estado { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rev-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rev-chips button { border: 1px solid var(--li); background: none; padding: 8px 12px; font-size: 12px; cursor: pointer; color: var(--tx); }
+.rev-chips button[aria-pressed="true"] { background: var(--tx); color: var(--bg); border-color: var(--tx); }
+.rev-chips.falta button { border-color: var(--tx); }
+.rev-info textarea { min-height: 0; height: 46px; resize: none; font-size: 14px; }
+.rev-decidir { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 16px max(16px, env(safe-area-inset-bottom)); flex: none; }
+.rev-listo { margin: auto 0; padding: 24px; display: flex; flex-direction: column; gap: 14px; text-align: center; align-items: center; }
+.rev-listo h2 { font-weight: 400; font-size: 24px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.rev-listo p { margin: 0; color: var(--mu); }
+
+/* Pedir variaciones */
+.var-paso { display: flex; flex-direction: column; gap: 10px; }
+.var-que { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.var-grilla { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.var-op { position: relative; flex-direction: row; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--li); padding: 12px 6px; cursor: pointer;
+  color: var(--tx); font-size: 12.5px; letter-spacing: 0; text-transform: none; text-align: center; }
+.var-op input { position: absolute; opacity: 0; pointer-events: none; }
+.var-op:has(input:checked) { border-color: var(--tx); outline: 1px solid var(--tx); }
+.var-op:has(input:disabled) { opacity: .4; cursor: default; }
+.var-grilla.colores .var-op { flex-direction: column; gap: 8px; padding: 12px 6px 10px; }
+.var-op i { width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(128, 128, 128, .35); }
+
+/* Inspiración */
+.marcas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--tx); }
+.marcas li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--li); }
+.marcas b { font-weight: 400; font-size: 15px; display: block; }
+.marcas small { color: var(--mu); font-size: 12px; }
+.agregar.marca-nueva { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; }
+
+/* Producción y ficha técnica */
+.fila-ficha { border: 0; border-bottom: 1px solid var(--li); background: none; width: 100%; text-align: left; cursor: pointer; color: inherit; font: inherit; }
+.fila-ficha b { font-weight: 400; font-size: 15px; }
+.ficha-tecnica { max-width: 820px; }
+.ft-volver { margin-bottom: 18px; }
+.ft-cabeza { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 22px; align-items: center; margin-bottom: 22px; }
+.ft-foto { width: 120px; height: 120px; background: var(--foto); display: grid; place-items: center; overflow: hidden; border: 0; padding: 0; cursor: zoom-in; }
+.ft-foto img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.ft-cabeza h1 { font-weight: 400; font-size: 28px; line-height: 1.15; letter-spacing: .06em; text-transform: uppercase; margin: 8px 0 4px; }
+.ft-sec { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--li); padding: 18px 0; }
+.ft-medidas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ft-lista { display: flex; flex-direction: column; gap: 8px; }
+.ft-fila { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, .8fr) 28px; gap: 8px; align-items: center; }
+.ft-sec > .mas { align-self: flex-start; }
+.ft-acciones { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--tx); padding-top: 18px; }
+
+@media (max-width: 900px) {
+  .menu { display: none; }
+  .cuenta { display: none !important; }
+  .abajo { display: grid; }
+  .contenido { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .mensaje { bottom: calc(86px + env(safe-area-inset-bottom)); }
+}
+@media (max-width: 600px) {
+  .inicio-cabeza h1 { font-size: 24px; }
+  .ft-cabeza { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; }
+  .ft-foto { width: 84px; height: 84px; }
+  .ft-cabeza h1 { font-size: 22px; }
+  .ft-medidas { grid-template-columns: 1fr 1fr; }
+  .ft-fila { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 28px; }
+  .ft-fila input:first-child { grid-column: 1 / 3; }
+  .ft-fila .quitar { grid-column: 3; grid-row: 1; }
+  .ft-acciones .btn { flex: 1 1 calc(50% - 4px); justify-content: center; }
+  .agregar.marca-nueva { grid-template-columns: 1fr; }
+}
+@media print {
+  .lateral, .abajo, .mensaje, .velo, .no-imprimir, #avisoGeneral { display: none !important; }
+  .app { display: block; }
+  .contenido { padding: 0 !important; }
+  body { background: #fff; color: #000; }
+  .ficha-tecnica input, .ficha-tecnica textarea { border: 0; padding: 2px 0; }
+  .ft-fila .quitar { display: none; }
+}
 </style>
 </head>
 <body>
@@ -323,10 +466,15 @@ body.con-acceso .app { visibility: hidden; }
   <aside class="lateral">
     <div class="marca"><img src="data:image/png;base64,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" alt="Santesteban"><span>Taller de diseño</span></div>
     <nav class="menu" aria-label="Secciones">
-      <button data-tab="taller" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14l-1.2 10.2a1.6 1.6 0 0 1-1.6 1.4H7.8a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg>Taller</button>
-      <button data-tab="historial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/><path d="M12 8v4l3 2"/></svg>Historial<span class="contador suave oculto" id="nRevisar"></span></button>
+      <button data-tab="inicio" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1.5 1.5 0 0 1-1.5 1.5H15v-5h-6v5H5.5A1.5 1.5 0 0 1 4 19z"/></svg>Inicio</button>
+      <button data-tab="inspiracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18 15l.8 2.2 2.2.8-2.2.8L18 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg>Inspiración</button>
+      <button data-tab="taller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14l-1.2 10.2a1.6 1.6 0 0 1-1.6 1.4H7.8a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg>Diseños<span class="contador suave oculto" id="nRevisar"></span></button>
+      <button data-tab="produccion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>Producción<span class="contador suave oculto" id="nFichas"></span></button>
+      <button data-tab="ventas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11"/><path d="M12 20V5"/><path d="M19 20v-7"/></svg>Ventas</button>
       <button data-tab="cerebro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 4.5A3 3 0 0 0 6.6 8 3.2 3.2 0 0 0 5 13.6 3 3 0 0 0 8 18.5a2.5 2.5 0 0 0 4 1V5.5a2.5 2.5 0 0 0-2.5-1z"/><path d="M14.5 4.5A3 3 0 0 1 17.4 8 3.2 3.2 0 0 1 19 13.6a3 3 0 0 1-3 4.9 2.5 2.5 0 0 1-4 1"/></svg>Cerebro de la diseñadora</button>
-      <button data-tab="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13l2.2-7.2A1.6 1.6 0 0 1 7.7 4.6h8.6a1.6 1.6 0 0 1 1.5 1.2L20 13"/><path d="M4 13v5a1.6 1.6 0 0 0 1.6 1.6h12.8A1.6 1.6 0 0 0 20 18v-5h-4.5l-1.2 2.2h-4.6L8.5 13z"/></svg>Pedidos de versiones<span class="contador oculto" id="nPedidos"></span></button>
+      <span class="menu-sep" aria-hidden="true"></span>
+      <button data-tab="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13l2.2-7.2A1.6 1.6 0 0 1 7.7 4.6h8.6a1.6 1.6 0 0 1 1.5 1.2L20 13"/><path d="M4 13v5a1.6 1.6 0 0 0 1.6 1.6h12.8A1.6 1.6 0 0 0 20 18v-5h-4.5l-1.2 2.2h-4.6L8.5 13z"/></svg>Pedidos<span class="contador oculto" id="nPedidos"></span></button>
+      <button data-tab="historial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/><path d="M12 8v4l3 2"/></svg>Historial</button>
       <button data-tab="equipo" class="oculto" id="menuEquipo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 14a5 5 0 0 1 3 5"/></svg>Equipo</button>
     </nav>
     <div class="grupo-modelos">
@@ -341,6 +489,13 @@ body.con-acceso .app { visibility: hidden; }
   </main>
 </div>
 
+<nav class="abajo" aria-label="Secciones">
+  <button data-tab="inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1.5 1.5 0 0 1-1.5 1.5H15v-5h-6v5H5.5A1.5 1.5 0 0 1 4 19z"/></svg><span>Inicio</span></button>
+  <button data-tab="taller"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14l-1.2 10.2a1.6 1.6 0 0 1-1.6 1.4H7.8a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg><span>Diseños</span><i class="aviso-punto oculto" id="pRevisar"></i></button>
+  <button data-tab="inspiracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18 15l.8 2.2 2.2.8-2.2.8L18 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg><span>Inspiración</span></button>
+  <button data-tab="ventas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11"/><path d="M12 20V5"/><path d="M19 20v-7"/></svg><span>Ventas</span></button>
+  <button data-accion="mas" id="abajoMas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/></svg><span>Más</span></button>
+</nav>
 <div class="velo" id="velo" role="dialog" aria-modal="true"><div class="ventana" id="ventana"></div></div>
 <div class="mensaje" id="mensaje" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
@@ -504,7 +659,7 @@ body.con-acceso .app { visibility: hidden; }
   const sb = window.supabase.createClient(C.url, C.clave, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: almacen },
   });
-  const COLECCIONES = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas"];
+  const COLECCIONES = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas", "fichas", "marcas"];
   const W = { sesion: null, yo: null, miembros: [], datos: new Map(), oyentes: new Map(), alCambiar: new Set(), suscripto: false };
   COLECCIONES.forEach((c) => W.datos.set(c, new Map()));
   let abrirTaller;
@@ -805,6 +960,12 @@ body.con-acceso .app { visibility: hidden; }
     alCambiar(f) { W.alCambiar.add(f); },
     async sumar(d) { const r = await funcion("sumar", d); await cargarMiembros(); return r; },
     async cambiar(email, cambios) { await funcion("cambiar", { email, ...cambios }); await cargarMiembros(); },
+    // Borrador de la ficha técnica: el dibujante mira la foto del diseño (devuelve null si no pudo)
+    async armarFicha(versionId) {
+      const { data, error } = await sb.functions.invoke("dibujar", { body: { accion: "ficha", version: versionId } });
+      if (error) throw error;
+      return data?.ficha || null;
+    },
     salir,
   };
 
@@ -1089,8 +1250,9 @@ body.con-acceso .app { visibility: hidden; }
     ideas: "Ideas de Claude", nota: "Nota"
   };
   const S = {
-    proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [],
-    listos: new Set(), tab: "taller", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
+    proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [], fichas: [], marcas: [],
+    revision: null, iTab: null, fichaSel: null, fichaSucia: false,
+    listos: new Set(), tab: "inicio", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
     db: null, assets: null, user: null, sample: null, downloads: null, yo: "", puede: null, nombres: {}, cargaFallo: false
   };
   const $ = (s, r = document) => r.querySelector(s);
@@ -1114,7 +1276,7 @@ body.con-acceso .app { visibility: hidden; }
     : x.estado === "error" ? "No se pudo dibujar"
     : (AUTO ? "En cola" : "Esperando a Claude");
   const explicaPedido = (x) => x.estado === "en_proceso"
-      ? (AUTO ? "El dibujante automático lo está dibujando. En uno o dos minutos las versiones aparecen en el Taller, en «Para revisar»." : "Claude ya lo está dibujando. Cuando termine, las versiones aparecen en el Taller, en «Para revisar».")
+      ? (AUTO ? "El dibujante automático lo está dibujando. En uno o dos minutos las versiones aparecen en Diseños, en «Para revisar»." : "Claude ya lo está dibujando. Cuando termine, las versiones aparecen en Diseños, en «Para revisar».")
     : x.estado === "en_cola" ? (x.nota || "Se terminó el cupo gratis de imágenes de hoy: sigue solo más tarde.")
     : x.estado === "error" ? `No se pudo dibujar${x.nota ? ": " + x.nota : ""}. Podés reintentarlo.`
     : (AUTO ? "Empieza en un momento: el dibujante automático toma los pedidos solo." : "Todavía no empezó: se dibuja cuando Joaquín le escribe a Claude «hay pedidos en el taller».");
@@ -1130,6 +1292,22 @@ body.con-acceso .app { visibility: hidden; }
   const escribe = () => !!S.db && S.puede !== false;
   const proyectosOrdenados = () => [...S.proyectos].sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99) || porFecha(a, b));
   const ordenVersiones = (a, b) => (b.ronda || 0) - (a.ronda || 0) || porFecha(a, b);
+  const COLS = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas", "fichas", "marcas"];
+  const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const ICONO = {
+    cerrar: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+    ok: svg('<path d="M5 12l5 5 9-10"/>'),
+    izq: svg('<path d="M15 5l-7 7 7 7"/>'),
+    der: svg('<path d="M9 5l7 7-7 7"/>'),
+  };
+  const juntar = (xs) => (xs.length <= 1 ? xs[0] || "" : `${xs.slice(0, -1).join(", ")} y ${xs[xs.length - 1]}`);
+  const fichaDe = (versionId) => S.fichas.find((f) => f.version === versionId);
+  const borradores = () => S.fichas.filter((f) => (f.estado || "borrador") === "borrador");
+  const tituloPedido = (x) => {
+    const p = proyecto(x.proyecto);
+    if (x.tipo === "variaciones") return `Variaciones de ${(VARIAR[x.cambia]?.nombre || "color").toLowerCase()} · ${p?.nombre || ""}`;
+    return `${p?.nombre ? p.nombre + ": " : ""}${x.texto || ""}`;
+  };
 
   // El cerebro: lo que se explicó al aceptar o rechazar cada diseño, más lo anotado a mano.
   function cerebro() {
@@ -1157,19 +1335,25 @@ body.con-acceso .app { visibility: hidden; }
 
   function dibujar() {
     document.body.dataset.seccion = S.tab;
-    document.querySelectorAll(".menu button[data-tab]").forEach((b) => {
-      if (b.dataset.tab === S.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    const enMenu = S.tab === "ficha" ? "produccion" : S.tab;
+    document.querySelectorAll(".menu button[data-tab], .abajo button[data-tab]").forEach((b) => {
+      if (b.dataset.tab === enMenu) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
     });
+    const mas = $("#abajoMas");
+    if (["inicio", "taller", "inspiracion", "ventas"].includes(enMenu)) mas.removeAttribute("aria-current"); else mas.setAttribute("aria-current", "page");
     const pend = S.pedidos.filter((p) => p.estado !== "hecho").length;
     const nP = $("#nPedidos"); nP.textContent = pend; nP.classList.toggle("oculto", !pend);
     const rev = S.versiones.filter((v) => v.estado === "propuesta").length;
     const nR = $("#nRevisar"); nR.textContent = rev; nR.classList.toggle("oculto", !rev);
+    $("#pRevisar").classList.toggle("oculto", !rev);
+    const nb = borradores().length;
+    const nF = $("#nFichas"); nF.textContent = nb; nF.classList.toggle("oculto", !nb);
     $("#botonSubir").classList.toggle("oculto", !(S.assets && escribe()));
     const web = window.tallerWeb;
     $("#menuEquipo").classList.toggle("oculto", !web?.esAdmin());
     $("#cuenta").classList.toggle("oculto", !web?.yo());
     if (web?.yo()) $("#cuentaNombre").textContent = web.yo().nombre;
-    if (S.tab === "equipo" && !web?.esAdmin()) S.tab = "taller";
+    if (S.tab === "equipo" && !web?.esAdmin()) S.tab = "inicio";
     dibujarModelos();
     const vista = $("#vista");
     if (!S.db) {
@@ -1180,8 +1364,11 @@ body.con-acceso .app { visibility: hidden; }
         : `<div class="aviso">Cargando el taller…</div>`;
       return;
     }
-    if (S.listos.size < 6) { vista.innerHTML = `<div class="aviso">Cargando el taller…</div>`; return; }
-    vista.innerHTML = S.tab === "historial" ? vHistorial() : S.tab === "cerebro" ? vCerebro() : S.tab === "pedidos" ? vPedidos() : S.tab === "equipo" ? vEquipo() : vTaller();
+    if (S.listos.size < COLS.length) { vista.innerHTML = `<div class="aviso">Cargando el taller…</div>`; return; }
+    // Mientras se edita una ficha técnica, no se repinta (para no perder lo que se está escribiendo)
+    if (S.tab === "ficha" && S.fichaSucia && $("#vista .ficha-tecnica")) { resolverNombres(); return; }
+    const vistas = { inicio: vInicio, inspiracion: vInspiracion, produccion: vProduccion, ventas: vVentas, ficha: vFicha, historial: vHistorial, cerebro: vCerebro, pedidos: vPedidos, equipo: vEquipo };
+    vista.innerHTML = (vistas[S.tab] || vTaller)();
     resolverNombres();
   }
 
@@ -1195,12 +1382,12 @@ body.con-acceso .app { visibility: hidden; }
         ${p.original ? `<img src="${foto(p.original)}" alt="" loading="lazy">` : `<div class="sinfoto"></div>`}
         <span><b>${esc(p.nombre)}</b><small>${r ? `${r} para revisar` : "Todo revisado"}${prod ? ` · ${prod} en producción` : ""}</small></span>
       </button>`;
-    }).join("") || (S.listos.size >= 6 ? `<p class="estado" style="padding:0 10px">Todavía no hay modelos.</p>` : "");
+    }).join("") || (S.listos.size >= COLS.length ? `<p class="estado" style="padding:0 10px">Todavía no hay modelos.</p>` : "");
   }
 
   function vTaller() {
     const p = proyecto(S.sel);
-    if (!p) return `<div class="cabeza"><h1>Taller</h1><p>Subí la foto de una cartera para empezar a transformarla al estilo Santesteban.</p></div>
+    if (!p) return `<div class="cabeza"><h1>Diseños</h1><p>Subí la foto de una cartera para empezar a transformarla al estilo Santesteban.</p></div>
       ${S.assets && escribe() ? `<button class="btn prim" data-accion="nuevoModelo">Subir un modelo</button>` : `<div class="aviso">Para subir modelos hace falta permiso de edición en esta página.</div>`}`;
     const vs = S.versiones.filter((v) => v.proyecto === p.id).sort(ordenVersiones);
     const cuenta = { propuesta: 0, guardada: 0, descartada: 0, todas: vs.length };
@@ -1216,8 +1403,12 @@ body.con-acceso .app { visibility: hidden; }
       </button>`;
     }).join("") : "";
     const ideas = S.ideas.filter((i) => i.proyecto === p.id).sort(porFecha);
+    const aceptada = vs.find((v) => v.estado === "guardada");
+    const fichasModelo = S.fichas.filter((f) => f.proyecto === p.id);
     const botones = escribe() ? `
       <button class="btn prim" data-accion="pedirVersiones">Pedir versiones nuevas</button>
+      ${cuenta.propuesta ? `<button class="btn" data-accion="revisar" data-id="${esc(p.id)}">Revisar de a una · ${cuenta.propuesta}</button>` : ""}
+      ${aceptada ? `<button class="btn" data-accion="variaciones" data-id="${esc(aceptada.id)}">Pedir variaciones</button>` : ""}
       ${S.sample ? `<button class="btn" data-accion="ideas">Ideas escritas con Claude</button>` : ""}
       <button class="btn" data-accion="editarModelo">Editar datos</button>` : "";
     const filtro = (k, t) => `<button data-accion="filtro" data-f="${k}" aria-pressed="${S.filtro === k}">${t} · ${cuenta[k]}</button>`;
@@ -1241,6 +1432,7 @@ body.con-acceso .app { visibility: hidden; }
             <dt>Se conserva</dt><dd>${esc(p.conservar || "Solo la forma y el tamaño")}</dd>
             ${p.notas ? `<dt>Notas</dt><dd>${esc(p.notas)}</dd>` : ""}
             <dt>Subido</dt><dd>${esc(fecha(p.creado))}${p.creadoPor ? ` · ${persona(p.creadoPor)}` : ""}</dd>
+            ${fichasModelo.length ? `<dt>Fichas</dt><dd>${fichasModelo.map((f) => `<a class="enlace" data-accion="verFicha" data-id="${esc(f.id)}">${esc(f.nombre)}</a>`).join(", ")}</dd>` : ""}
           </dl>
           <div class="acciones">${botones}</div>
         </div>
@@ -1369,13 +1561,13 @@ body.con-acceso .app { visibility: hidden; }
     return `<div class="cabeza"><h1>Pedidos de versiones</h1>${AUTO ? `<p>Los diseños nuevos que pide el equipo. El dibujante automático los toma solos y propone versiones siguiendo el cerebro de la diseñadora.</p></div>
       <div class="pasos">
         <div class="paso"><span class="num">1</span><b>Se pide</b><p>Al subir un modelo, con «Pedir versiones nuevas», con «Pedir un cambio» en un diseño, o acá abajo.</p></div>
-        <div class="paso"><span class="num">2</span><b>Se dibuja solo</b><p>En uno o dos minutos aparecen versiones nuevas. El plan gratis alcanza para unas 6 imágenes por día; si se termina, sigue solo más tarde.</p></div>
-        <div class="paso"><span class="num">3</span><b>Se revisa</b><p>Las versiones aparecen en el Taller, en «Para revisar». Aceptarlas o rechazarlas con el porqué alimenta el cerebro.</p></div>
+        <div class="paso"><span class="num">2</span><b>Se dibuja solo</b><p>En uno o dos minutos aparecen versiones nuevas. El plan gratis alcanza para varias decenas de imágenes por día; si se termina, sigue solo más tarde.</p></div>
+        <div class="paso"><span class="num">3</span><b>Se revisa</b><p>Las versiones aparecen en Diseños, en «Para revisar». Aceptarlas o rechazarlas con el porqué alimenta el cerebro.</p></div>
       </div>` : `<p>La lista de diseños nuevos que el equipo le pide a Claude. La página no puede dibujar carteras sola: anota el pedido y Claude lo dibuja.</p></div>
       <div class="pasos">
         <div class="paso"><span class="num">1</span><b>Se pide</b><p>Con «Pedir un cambio» en un diseño, «Pedir versiones nuevas» en un modelo, o acá abajo.</p></div>
         <div class="paso"><span class="num">2</span><b>Queda anotado</b><p>Aparece en esta lista como «esperando a Claude», con el modelo y lo que se pidió. La página no lo dibuja sola.</p></div>
-        <div class="paso"><span class="num">3</span><b>Claude lo dibuja</b><p>Joaquín le escribe a Claude «hay pedidos en el taller». Mientras trabaja, el pedido dice «Claude lo está dibujando»; al terminar, las versiones aparecen en el Taller, en «Para revisar».</p></div>
+        <div class="paso"><span class="num">3</span><b>Claude lo dibuja</b><p>Joaquín le escribe a Claude «hay pedidos en el taller». Mientras trabaja, el pedido dice «Claude lo está dibujando»; al terminar, las versiones aparecen en Diseños, en «Para revisar».</p></div>
       </div>`}
       ${nuevo}
       <div class="seccion"><span class="etiqueta">Pendientes · ${pend.length}</span>${pend.length ? `<div class="lista">${pend.map(fila).join("")}</div>` : `<div class="vacio">No hay pedidos esperando.</div>`}</div>
@@ -1402,7 +1594,7 @@ body.con-acceso .app { visibility: hidden; }
       </li>`;
     };
     return `<div>
-      <header class="cabeza"><h1>Equipo</h1><p>Quién puede entrar al taller. Nadie usa contraseña: cada persona entra con su mail y un código que le llega por correo. Para sumar a alguien, cargá su nombre y su mail, y avisale que ya puede entrar.</p></header>
+      <header class="cabeza"><h1>Equipo</h1><p>Quién puede entrar al taller. Nadie usa contraseña: cada persona entra con su mail y un botón que le llega por correo. Para sumar a alguien, cargá su nombre y su mail, y avisale que ya puede entrar.</p></header>
       <section class="seccion"><span class="etiqueta">Personas · ${ms.filter((m) => m.activo).length}</span><ul class="equipo">${ms.map(fila).join("")}</ul></section>
       <section class="seccion"><span class="etiqueta">Sumar a alguien</span>
         <form class="sumar" data-form="sumar">
@@ -1416,7 +1608,7 @@ body.con-acceso .app { visibility: hidden; }
   }
   // Mensaje listo para mandar por WhatsApp o por mail
   function mostrarAviso(m, recien) {
-    const texto = `Hola ${m.nombre.split(" ")[0]}! Ya tenés acceso al taller de diseño de Santesteban: ${window.tallerWeb.direccion()}\nEntrá con tu mail (${m.email}) y te llega un código para entrar. No hace falta contraseña.`;
+    const texto = `Hola ${m.nombre.split(" ")[0]}! Ya tenés acceso al taller de diseño de Santesteban: ${window.tallerWeb.direccion()}\nEntrá con tu mail (${m.email}) y te llega un mail con un botón para entrar. No hace falta contraseña.`;
     abrirVentana(`<div class="formulario">
       <h2>${recien ? `Listo: ${esc(m.nombre)} ya puede entrar` : `Avisale a ${esc(m.nombre)}`}</h2>
       <p>Mandale este mensaje por WhatsApp o por mail.</p>
@@ -1463,8 +1655,10 @@ body.con-acceso .app { visibility: hidden; }
         ${decidido ? `<button class="btn" data-accion="decidir" data-id="${esc(v.id)}" data-estado="${esc(v.estado)}">Cambiar o explicar</button>`
           : `<button class="btn ok" data-accion="decidir" data-id="${esc(v.id)}" data-estado="guardada">Aceptar</button><button class="btn no" data-accion="decidir" data-id="${esc(v.id)}" data-estado="descartada">Rechazar</button>`}
         <button class="btn" data-accion="cambio" data-id="${esc(v.id)}">Pedir un cambio</button>
+        <button class="btn" data-accion="variaciones" data-id="${esc(v.id)}">Pedir variaciones</button>
+        ${v.estado === "guardada" ? `<button class="btn" data-accion="ficha" data-id="${esc(v.id)}">${fichaDe(v.id) ? "Ver ficha técnica" : "Armar ficha técnica"}</button>` : ""}
         ${S.downloads ? `<button class="btn" data-accion="descargar" data-id="${esc(v.id)}">Descargar</button>` : ""}
-      </div>` : (S.downloads ? `<div class="acciones"><button class="btn" data-accion="descargar" data-id="${esc(v.id)}">Descargar</button></div>` : "");
+      </div>` : (S.downloads || fichaDe(v.id) ? `<div class="acciones">${fichaDe(v.id) ? `<button class="btn" data-accion="ficha" data-id="${esc(v.id)}">Ver ficha técnica</button>` : ""}${S.downloads ? `<button class="btn" data-accion="descargar" data-id="${esc(v.id)}">Descargar</button>` : ""}</div>` : "");
     const lin = linaje(v);
     abrirVentana(`<div class="detalle" data-version="${esc(v.id)}">
       <div class="imagenes">
@@ -1553,13 +1747,319 @@ body.con-acceso .app { visibility: hidden; }
     </form>`, true);
   }
 
+  // ---------- Inicio: lo que hay para hacer hoy ----------
+  const FLECHA = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`;
+  function vInicio() {
+    const web = window.tallerWeb;
+    const nombre = String(web?.yo()?.nombre || "").trim().split(/\s+/)[0];
+    const hoy = new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+    const pend = S.versiones.filter((v) => v.estado === "propuesta").sort(porFecha);
+    const camino = S.pedidos.filter((x) => x.estado !== "hecho").sort(porFecha);
+    const fb = borradores().sort(porFecha);
+    const nm = S.marcas.length;
+    const revisar = pend.length
+      ? `<section class="inicio-card negra">
+          <div class="inicio-fila"><div><span class="etiqueta">Para revisar</span><b>${pend.length === 1 ? "1 versión nueva" : `${pend.length} versiones nuevas`}</b></div><span class="inicio-num">${pend.length}</span></div>
+          <div class="inicio-fotos">${pend.slice(0, 3).map((v) => `<span>${v.imagen ? `<img src="${foto(v.imagen)}" alt="" loading="lazy">` : ""}</span>`).join("")}</div>
+          ${escribe() ? `<button class="btn prim grande" data-accion="revisar">Revisar</button>` : `<button class="btn prim grande" data-tab="taller">Ver los diseños</button>`}
+        </section>`
+      : `<section class="inicio-card"><span class="etiqueta">Para revisar</span><b>No hay nada para revisar</b>
+          <p>Cuando ${DIBUJA} termine un pedido, las versiones nuevas aparecen acá.</p></section>`;
+    const enCamino = camino.length ? `<section class="inicio-card"><span class="etiqueta">En camino · ${camino.length}</span>
+        ${camino.slice(0, 3).map((x) => {
+          const base = x.version ? version(x.version) : null;
+          const img = base?.imagen || proyecto(x.proyecto)?.original;
+          return `<button class="inicio-pedido" data-accion="verPedido" data-id="${esc(x.id)}"><span class="mini">${img ? `<img src="${foto(img)}" alt="" loading="lazy">` : ""}</span>
+            <span><b>${esc(tituloPedido(x))}</b><small>${esc(estadoPedido(x))}</small></span></button>`;
+        }).join("")}
+        ${camino.some((x) => x.estado === "en_proceso") ? `<div class="barrita"><i></i></div>` : ""}
+        ${camino.length > 3 ? `<button class="mas" data-tab="pedidos" style="align-self:flex-start;margin-top:8px">Ver todos</button>` : ""}
+      </section>` : "";
+    const inspiracion = `<button class="inicio-card fila-card" data-tab="inspiracion"><span><span class="etiqueta">Inspiración</span>
+        <b>${nm ? `${nm} marca${nm === 1 ? "" : "s"} en el radar` : "Sumá las marcas que seguís"}</b>
+        <small>${nm ? "Pronto vas a poder ver sus novedades desde acá." : "Para ver qué están sacando y qué se repite."}</small></span>${FLECHA}</button>`;
+    const fichas = fb.length ? `<button class="inicio-card fila-card" data-tab="produccion"><span><span class="etiqueta">Fichas por completar · ${fb.length}</span>
+        <b>${esc(juntar(fb.slice(0, 3).map((f) => f.nombre)))}${fb.length > 3 ? ` y ${fb.length - 3} más` : ""}</b>
+        <small>Revisá medidas, materiales y herrajes antes de mandarlas.</small></span>${FLECHA}</button>` : "";
+    return `<div class="inicio">
+      <header class="inicio-cabeza"><span class="etiqueta">${esc(hoy)}</span><h1>${nombre ? `Hola, ${esc(nombre)}` : "Hola"}</h1></header>
+      ${revisar}${enCamino}${inspiracion}${fichas}
+    </div>`;
+  }
+
+  // ---------- Más (en el celular): lo que no entra en la barra de abajo ----------
+  function abrirMas() {
+    const web = window.tallerWeb;
+    const pend = S.pedidos.filter((p) => p.estado !== "hecho").length;
+    const nb = borradores().length;
+    const item = (tab, nombre, n = 0) => `<button class="mas-item" data-tab="${tab}">${nombre}${n ? `<span class="contador">${n}</span>` : ""}</button>`;
+    abrirVentana(`<div class="formulario"><h2>Más</h2>
+      <nav class="mas-lista" aria-label="Más secciones">${item("produccion", "Producción", nb)}${item("cerebro", "Cerebro de la diseñadora")}${item("pedidos", "Pedidos", pend)}${item("historial", "Historial")}${web?.esAdmin() ? item("equipo", "Equipo") : ""}</nav>
+      ${web?.yo() ? `<div class="mas-cuenta"><span>${esc(web.yo().nombre)}</span><button class="mas" data-accion="salir">Salir</button></div>` : ""}
+    </div>`, true);
+  }
+
+  // ---------- Revisar de a una (pensado para el celular) ----------
+  const PORQUE = ["Color", "Forma", "Materiales", "Herrajes", "Tamaño", "Detalles"];
+  function armarMotivo(estado, chips, texto) {
+    const cabeza = chips.length ? `${estado === "guardada" ? "Me gusta" : "No me convence"}: ${juntar(chips.map((c) => c.toLowerCase()))}.` : "";
+    const limpio = texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : "";
+    const resto = limpio ? (/[.!?]$/.test(limpio) ? limpio : limpio + ".") : "";
+    return [cabeza, resto].filter(Boolean).join(" ").trim();
+  }
+  const pendientesRevision = () => (S.revision ? S.revision.ids.filter((id) => !S.revision.hechas.has(id) && version(id)?.estado === "propuesta") : []);
+  function abrirRevision(proyectoId) {
+    const ids = S.versiones.filter((v) => v.estado === "propuesta" && (!proyectoId || v.proyecto === proyectoId)).sort(porFecha).map((v) => v.id);
+    if (!ids.length) { avisar("No hay nada para revisar"); return; }
+    S.revision = { ids, i: 0, chips: new Set(), texto: "", hechas: new Set() };
+    let r = $("#revision");
+    if (!r) {
+      r = document.createElement("div");
+      r.id = "revision";
+      r.className = "revision";
+      r.setAttribute("role", "dialog");
+      r.setAttribute("aria-modal", "true");
+      r.setAttribute("aria-label", "Revisar versiones");
+      document.body.append(r);
+    }
+    document.body.classList.add("en-revision");
+    dibujarRevision();
+  }
+  function cerrarRevision() {
+    S.revision = null;
+    $("#revision")?.remove();
+    document.body.classList.remove("en-revision");
+    render();
+  }
+  function moverRevision(d) {
+    const n = pendientesRevision().length;
+    if (!S.revision || n < 2) return;
+    S.revision.i = (S.revision.i + d + n) % n;
+    S.revision.chips = new Set();
+    S.revision.texto = "";
+    dibujarRevision();
+  }
+  function dibujarRevision() {
+    const R = S.revision;
+    const r = $("#revision");
+    if (!R || !r) return;
+    const pend = pendientesRevision();
+    const arriba = (centro, derecha = "<span></span>") => `<div class="rev-arriba"><button class="rev-cerrar" data-accion="cerrarRevision" aria-label="Cerrar">${ICONO.cerrar}</button><span>${centro}</span>${derecha}</div>`;
+    if (!pend.length) {
+      r.innerHTML = `${arriba("Para revisar")}
+        <div class="rev-listo"><h2>Listo, no queda nada</h2><p>Lo que decidiste ya está en el cerebro de la diseñadora.</p><button class="btn prim grande" data-accion="cerrarRevision">Volver</button></div>`;
+      return;
+    }
+    R.i = Math.min(R.i, pend.length - 1);
+    const v = version(pend[R.i]);
+    const p = proyecto(v.proyecto);
+    const chips = [...new Set([...PORQUE, ...(v.materiales || []).slice(0, 2).map((m) => String(m).slice(0, 24))])];
+    r.innerHTML = `${arriba(`Para revisar · ${R.i + 1} de ${pend.length}`, `<button class="rev-ver" data-accion="abrir" data-id="${esc(v.id)}">Detalle</button>`)}
+      <div class="rev-foto" id="revFoto">
+        ${v.imagen ? `<img src="${foto(v.imagen)}" alt="${esc(v.nombre)}">` : ""}
+        ${pend.length > 1 ? `<button class="rev-flecha izq" data-accion="revAnterior" aria-label="Anterior">${ICONO.izq}</button><button class="rev-flecha der" data-accion="revSiguiente" aria-label="Siguiente">${ICONO.der}</button>
+          <div class="rev-puntos">${pend.slice(0, 12).map((_, j) => `<i class="${j === R.i ? "si" : ""}"></i>`).join("")}</div>` : ""}
+      </div>
+      <div class="rev-info">
+        <h2>${esc(v.nombre)}</h2>
+        <p class="estado">${esc(p?.nombre || "")}${v.ronda ? ` · ronda ${esc(v.ronda)}` : ""}${v.descripcion ? ` · ${esc(v.descripcion)}` : ""}</p>
+        <span class="etiqueta">¿Por qué?</span>
+        <div class="rev-chips" role="group" aria-label="Por qué">${chips.map((c) => `<button type="button" data-accion="revChip" data-c="${esc(c)}" aria-pressed="${R.chips.has(c)}">${esc(c)}</button>`).join("")}</div>
+        <textarea id="revTexto" rows="2" maxlength="600" aria-label="Comentario" placeholder="Contá más si querés (podés dictarlo)">${esc(R.texto)}</textarea>
+      </div>
+      <div class="rev-decidir">
+        <button class="btn grande" data-accion="revDecidir" data-estado="descartada">${ICONO.cerrar}Rechazar</button>
+        <button class="btn prim grande" data-accion="revDecidir" data-estado="guardada">${ICONO.ok}Aceptar</button>
+      </div>`;
+    // Deslizar con el dedo para pasar de una a otra
+    const zona = $("#revFoto");
+    let x0 = null;
+    zona.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    zona.addEventListener("touchend", (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) > 50) moverRevision(dx < 0 ? 1 : -1);
+    });
+  }
+
+  // ---------- Pedir variaciones de una sola cosa ----------
+  const VARIAR = {
+    color: { nombre: "Color", elegir: "Elegí los colores", otro: "Ej.: verde inglés", opciones: [["Negro", "#151515"], ["Chocolate", "#5B3B2B"], ["Suela", "#9A6A3F"], ["Bordó", "#6D1E2A"], ["Natural", "#D9C7A7"], ["Oliva", "#5E6240"]] },
+    material: { nombre: "Material", elegir: "Elegí los materiales", otro: "Ej.: cuero croco", opciones: [["Cuero liso"], ["Cuero graneado"], ["Gamuza"], ["Chaguar tejido"], ["Cuero trenzado"]] },
+    herraje: { nombre: "Herraje", elegir: "Elegí los herrajes", otro: "Ej.: bronce viejo", opciones: [["Dorado"], ["Plateado"], ["Asta"], ["Madera"], ["Ónix"], ["Nácar"]] },
+    tamano: { nombre: "Tamaño", elegir: "Elegí los tamaños", otro: "Ej.: bandolera larga", opciones: [["Mini"], ["Chico"], ["Grande"]] },
+  };
+  const MAX_VARIACIONES = 4;
+  function opcionesVariar(k) {
+    const x = VARIAR[k];
+    return `<span class="etiqueta">2 · ${x.elegir}</span>
+      <div class="var-grilla ${k === "color" ? "colores" : ""}">${x.opciones.map(([n, c]) => `<label class="var-op">${c ? `<i style="background:${c}"></i>` : ""}<input type="checkbox" name="op" value="${esc(n)}"><span>${esc(n)}</span></label>`).join("")}</div>
+      <label>Otro (opcional)<input type="text" name="otro" maxlength="40" placeholder="${esc(x.otro)}"></label>`;
+  }
+  function abrirVariaciones(versionId) {
+    const v = version(versionId);
+    if (!v) return;
+    abrirVentana(`<form class="formulario" data-form="variaciones" data-id="${esc(v.id)}">
+      <h2>Pedir variaciones</h2>
+      <div class="quien-decide">${v.imagen ? `<img src="${foto(v.imagen)}" alt="">` : "<span></span>"}<div><b style="font-weight:400">${esc(v.nombre)}</b><p>Se cambia una sola cosa; todo lo demás queda igual.</p></div></div>
+      <div class="var-paso"><span class="etiqueta">1 · ¿Qué querés cambiar?</span>
+        <div class="var-que" role="radiogroup" aria-label="Qué cambiar">${Object.entries(VARIAR).map(([k, x], i) => `<label class="opcion"><input type="radio" name="cambia" value="${k}" ${i === 0 ? "checked" : ""}> ${x.nombre}</label>`).join("")}</div>
+      </div>
+      <div class="var-paso" id="varOpciones">${opcionesVariar("color")}</div>
+      <button class="btn prim grande" type="submit" id="varPedir" disabled>Elegí qué variar</button>
+      <p>Llegan en uno o dos minutos a «Para revisar». Hasta ${MAX_VARIACIONES} por pedido.</p>
+    </form>`, true);
+  }
+  function contarVariaciones(form) {
+    const marcadas = form.querySelectorAll("input[name='op']:checked").length;
+    const otro = String(form.querySelector("input[name='otro']")?.value || "").trim() ? 1 : 0;
+    const n = marcadas + otro;
+    form.querySelectorAll("input[name='op']").forEach((c) => { c.disabled = !c.checked && n >= MAX_VARIACIONES; });
+    const b = $("#varPedir");
+    b.disabled = !n || n > MAX_VARIACIONES;
+    b.textContent = !n ? "Elegí qué variar" : n > MAX_VARIACIONES ? `Hasta ${MAX_VARIACIONES} por pedido` : n === 1 ? "Pedir 1 variación" : `Pedir ${n} variaciones`;
+  }
+
+  // ---------- Inspiración: el radar de marcas ----------
+  function vInspiracion() {
+    const ms = [...S.marcas].sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
+    const tab = S.iTab || (S.iTab = ms.length ? "novedades" : "marcas");
+    const pest = (k, n) => `<button data-accion="iTab" data-f="${k}" aria-pressed="${tab === k}">${n}</button>`;
+    const cabeza = `<div class="cabeza"><h1>Inspiración</h1><p>El radar de las marcas que seguís: qué están sacando y qué se repite entre ellas. Sirve para leer tendencias (colores, materiales, formas), no para copiar modelos.</p></div>
+      <div class="filtros" role="group" aria-label="Qué ver">${pest("novedades", "Novedades")}${pest("tendencias", "Tendencias")}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
+    if (tab === "marcas") {
+      const fila = (m) => `<li><div><b>${esc(m.nombre)}</b>${m.web ? `<small><a href="${esc(m.web)}" target="_blank" rel="noopener noreferrer">${esc(String(m.web).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></small>` : ""}</div>${escribe() ? `<button class="quitar" data-accion="borrarMarca" data-id="${esc(m.id)}" aria-label="Sacar ${esc(m.nombre)}" title="Sacar">×</button>` : ""}</li>`;
+      const form = escribe() ? `<form class="agregar marca-nueva" data-form="marca"><input type="text" name="nombre" required maxlength="60" placeholder="Nombre de la marca" aria-label="Nombre de la marca"><input type="text" name="web" maxlength="200" inputmode="url" autocapitalize="off" placeholder="Su web (ej.: marca.com)" aria-label="Web de la marca"><button class="btn prim" type="submit">Sumar</button></form>` : "";
+      return cabeza + (ms.length ? `<ul class="marcas">${ms.map(fila).join("")}</ul>` : `<div class="vacio">Todavía no hay marcas. Sumá la primera: con 10 a 15 alcanza.</div>`) + form;
+    }
+    const texto = ms.length
+      ? `Ya hay ${ms.length} marca${ms.length === 1 ? "" : "s"} en el radar. Estamos terminando el botón «Actualizar información»: cuando esté, ${tab === "novedades" ? "acá van a aparecer sus novedades, con foto, nombre y precio" : "acá va a aparecer lo que más se repite entre ellas"}.`
+      : "Primero sumá las marcas que seguís, en «Marcas».";
+    return cabeza + `<div class="vacio">${texto}</div>`;
+  }
+
+  // ---------- Ventas (con Tienda Nube) ----------
+  function vVentas() {
+    return `<div class="cabeza"><h1>Ventas</h1><p>Lo que se vende en Tienda Nube, por modelo y por color, y lo que el taller aprende de eso para el cerebro de la diseñadora.</p></div>
+      <div class="vacio">Estamos preparando la conexión con Tienda Nube. Cuando esté lista, acá vas a ver lo más vendido de cada mes.</div>`;
+  }
+
+  // ---------- Producción: las fichas técnicas ----------
+  const ESTADO_FICHA = { borrador: "Por completar", revisada: "Revisada", enviada: "Enviada" };
+  function vProduccion() {
+    const fs = [...S.fichas].sort((a, b) => String(b.actualizado || b.creado || "").localeCompare(String(a.actualizado || a.creado || "")));
+    const item = (f) => {
+      const p = proyecto(f.proyecto);
+      return `<button class="pedido fila-ficha" data-accion="verFicha" data-id="${esc(f.id)}">${f.imagen ? `<img src="${foto(f.imagen)}" alt="" loading="lazy">` : `<div class="sinfoto"></div>`}
+        <div><b>${esc(f.nombre)}</b><p class="estado">${esc(p?.nombre || "")}${f.tipo ? ` · ${esc(f.tipo)}` : ""} · ${esc(fecha(f.actualizado || f.creado))}</p></div><span></span></button>`;
+    };
+    const grupo = (estado) => {
+      const xs = fs.filter((f) => (f.estado || "borrador") === estado);
+      return xs.length ? `<div class="seccion"><span class="etiqueta">${ESTADO_FICHA[estado]} · ${xs.length}</span><div class="lista">${xs.map(item).join("")}</div></div>` : "";
+    };
+    return `<div class="cabeza"><h1>Producción</h1><p>Las fichas técnicas de los diseños aceptados: medidas, materiales, herrajes y armado, listas para el taller o el proveedor.</p></div>
+      ${fs.length ? grupo("borrador") + grupo("revisada") + grupo("enviada") : `<div class="vacio">Todavía no hay fichas. Abrí un diseño aceptado y tocá «Armar ficha técnica».</div>`}`;
+  }
+
+  const CAMPOS_FICHA = { materiales: [["parte", "Parte (ej.: cuerpo)"], ["material", "Material"], ["color", "Color"]], herrajes: [["pieza", "Pieza (ej.: argollas)"], ["material", "Material o acabado"], ["cantidad", "Cantidad"]] };
+  const filaEditable = (lista, x = {}) => `<div class="ft-fila">${CAMPOS_FICHA[lista].map(([k, ph]) => `<input type="text" value="${esc(x[k] || "")}" placeholder="${esc(ph)}" aria-label="${esc(ph)}" ${escribe() ? "" : "readonly"}>`).join("")}${escribe() ? `<button type="button" class="quitar" data-accion="fichaQuitar" aria-label="Quitar" title="Quitar">×</button>` : ""}</div>`;
+  function vFicha() {
+    const f = S.fichas.find((x) => x.id === S.fichaSel);
+    if (!f) return `<div class="cabeza"><h1>Ficha técnica</h1><p>No encontré esta ficha.</p></div><button class="btn" data-tab="produccion">Volver a Producción</button>`;
+    const p = proyecto(f.proyecto);
+    const ed = escribe();
+    const m = f.medidas || {};
+    const medida = (k, n) => `<label>${n}<input type="text" name="m_${k}" inputmode="decimal" value="${esc(m[k] || "")}" ${ed ? "" : "readonly"}></label>`;
+    const lista = (k, titulo, sumar) => `<section class="ft-sec"><span class="etiqueta">${titulo}</span>
+        <div class="ft-lista" data-lista="${k}">${(f[k] || []).map((x) => filaEditable(k, x)).join("") || (ed ? filaEditable(k) : `<p class="estado">Sin cargar.</p>`)}</div>
+        ${ed ? `<button type="button" class="mas no-imprimir" data-accion="fichaSumar" data-lista="${k}">${sumar}</button>` : ""}</section>`;
+    return `<div class="ficha-tecnica">
+      <div class="ft-volver no-imprimir"><button class="mas" data-tab="produccion">‹ Producción</button></div>
+      <header class="ft-cabeza">
+        <button class="ft-foto" data-accion="abrir" data-id="${esc(f.version)}" aria-label="Ver el diseño">${f.imagen ? `<img src="${foto(f.imagen)}" alt="">` : ""}</button>
+        <div><div class="fila"><span class="chip ${(f.estado || "borrador") === "borrador" ? "pendiente" : "guardada"}">${esc(ESTADO_FICHA[f.estado || "borrador"])}</span>${f.automatica && (f.estado || "borrador") === "borrador" ? `<span class="chip">Borrador automático: revisalo</span>` : ""}</div>
+          <h1>Ficha técnica</h1><p class="estado">${esc(f.nombre)}${p ? ` · ${esc(p.nombre)}` : ""}</p></div>
+      </header>
+      <form data-form="ficha" data-id="${esc(f.id)}">
+        <section class="ft-sec"><span class="etiqueta">Producto</span><input type="text" name="tipo" maxlength="100" value="${esc(f.tipo || "")}" placeholder="Ej.: cartera tote con dos manijas" aria-label="Producto" ${ed ? "" : "readonly"}></section>
+        <section class="ft-sec"><span class="etiqueta">Medidas en centímetros</span><div class="ft-medidas">${medida("alto", "Alto")}${medida("ancho", "Ancho")}${medida("profundidad", "Profundidad")}${medida("manija", "Manija o caída")}</div></section>
+        ${lista("materiales", "Materiales", "Sumar material")}
+        ${lista("herrajes", "Herrajes", "Sumar herraje")}
+        <section class="ft-sec"><span class="etiqueta">Armado</span><textarea name="construccion" maxlength="2000" placeholder="Pasos de armado, costuras, cantos y refuerzos" aria-label="Armado" ${ed ? "" : "readonly"}>${esc(f.construccion || "")}</textarea></section>
+        <section class="ft-sec"><span class="etiqueta">Notas para el taller</span><textarea name="notas" maxlength="1000" aria-label="Notas para el taller" ${ed ? "" : "readonly"}>${esc(f.notas || "")}</textarea></section>
+        <div class="ft-acciones no-imprimir">
+          ${ed ? `<button class="btn prim" type="submit">Guardar</button>` : ""}
+          ${ed && (f.estado || "borrador") === "borrador" ? `<button class="btn" type="button" data-accion="fichaEstado" data-estado="revisada">Marcar como revisada</button>` : ""}
+          <button class="btn" type="button" data-accion="fichaWhatsapp">Mandar por WhatsApp</button>
+          <button class="btn" type="button" data-accion="fichaImprimir">Descargar PDF</button>
+        </div>
+      </form>
+    </div>`;
+  }
+  function leerFicha(form) {
+    const d = new FormData(form);
+    const val = (k) => String(d.get(k) || "").trim();
+    const filas = (lista) => [...form.querySelectorAll(`.ft-lista[data-lista="${lista}"] .ft-fila`)].map((r) => {
+      const ins = r.querySelectorAll("input");
+      return Object.fromEntries(CAMPOS_FICHA[lista].map(([k], i) => [k, String(ins[i]?.value || "").trim()]));
+    }).filter((x) => Object.values(x).some(Boolean));
+    return {
+      tipo: val("tipo"),
+      medidas: { alto: val("m_alto"), ancho: val("m_ancho"), profundidad: val("m_profundidad"), manija: val("m_manija") },
+      materiales: filas("materiales"), herrajes: filas("herrajes"),
+      construccion: val("construccion"), notas: val("notas"), actualizado: ahora(),
+    };
+  }
+  function textoFicha(f) {
+    const p = proyecto(f.proyecto);
+    const m = f.medidas || {};
+    const med = [["Alto", m.alto], ["Ancho", m.ancho], ["Profundidad", m.profundidad], ["Manija", m.manija]].filter(([, x]) => x).map(([k, x]) => `${k} ${x} cm`).join(" · ");
+    const l = [`*Ficha técnica · ${f.nombre}*${p ? ` (${p.nombre})` : ""}`];
+    if (f.tipo) l.push(f.tipo);
+    if (med) l.push(`Medidas: ${med}`);
+    if (f.materiales?.length) l.push("Materiales:", ...f.materiales.map((x) => `- ${x.parte ? x.parte + ": " : ""}${[x.material, x.color].filter(Boolean).join(", ")}`));
+    if (f.herrajes?.length) l.push("Herrajes:", ...f.herrajes.map((x) => `- ${x.pieza ? x.pieza + ": " : ""}${x.material || ""}${x.cantidad ? ` (${x.cantidad})` : ""}`));
+    if (f.construccion) l.push(`Armado: ${f.construccion}`);
+    if (f.notas) l.push(`Notas: ${f.notas}`);
+    return l.join("\n");
+  }
+  function verFicha(id) {
+    S.fichaSel = id;
+    S.fichaSucia = false;
+    S.tab = "ficha";
+    if ($("#velo").classList.contains("abierto")) cerrarVentana();
+    render();
+    window.scrollTo?.(0, 0);
+  }
+  // El borrador lo arma el asistente mirando la foto; si no puede, queda en blanco para completar
+  async function armarFicha(v) {
+    const ya = fichaDe(v.id);
+    if (ya) { verFicha(ya.id); return; }
+    const p = proyecto(v.proyecto);
+    avisar("Armando la ficha técnica…");
+    let auto = null;
+    try { auto = (await window.tallerWeb?.armarFicha?.(v.id)) || null; } catch (e) { console.warn(e); }
+    const ref = await S.db.collection("fichas").add({
+      proyecto: v.proyecto, version: v.id, nombre: v.nombre, imagen: v.imagen || "", estado: "borrador", tipo: auto?.tipo || "",
+      medidas: { alto: "", ancho: "", profundidad: "", manija: "" },
+      materiales: auto?.materiales?.length ? auto.materiales : (v.materiales || []).map((x) => ({ parte: "", material: String(x), color: "" })),
+      herrajes: auto?.herrajes || [], construccion: auto?.construccion || "",
+      notas: p?.conservar ? `Del modelo original se conserva: ${p.conservar}.` : "",
+      creado: ahora(), actualizado: ahora(), quien: S.yo || "", automatica: !!auto,
+    });
+    await evento({ proyecto: v.proyecto, version: v.id, tipo: "nota", texto: auto ? "Se armó el borrador de la ficha técnica." : "Se abrió la ficha técnica para completar." });
+    verFicha(ref.id);
+    if (window.tallerWeb && !auto) avisar("La ficha quedó para completar a mano: el asistente no pudo armarla esta vez");
+  }
+
   // ---------- Escrituras ----------
   async function evento(datos) {
     await S.db.collection("historial").add({ creado: ahora(), quien: S.yo || "", ...datos });
   }
 
-  async function pedir(proyectoId, versionId, texto) {
-    const ref = await S.db.collection("pedidos").add({ proyecto: proyectoId, version: versionId || "", texto, estado: "pendiente", creado: ahora(), quien: S.yo || "" });
+  async function pedir(proyectoId, versionId, texto, extra = {}) {
+    const ref = await S.db.collection("pedidos").add({ proyecto: proyectoId, version: versionId || "", texto, estado: "pendiente", creado: ahora(), quien: S.yo || "", ...extra });
     await evento({ proyecto: proyectoId, version: versionId || "", tipo: "pedido", texto, pedido: ref.id });
     avisar(AUTO ? "Pedido anotado: se dibuja solo en uno o dos minutos" : "Pedido anotado: Claude lo va a dibujar");
   }
@@ -1648,8 +2148,16 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
 
   // ---------- Eventos ----------
   document.addEventListener("click", async (ev) => {
-    const tab = ev.target.closest(".menu [data-tab]");
-    if (tab) { S.tab = tab.dataset.tab; render(); window.scrollTo?.(0, 0); return; }
+    const tab = ev.target.closest("[data-tab]");
+    if (tab) {
+      if (S.tab === "ficha" && S.fichaSucia && tab.dataset.tab !== "ficha" && !confirm("Tenés cambios sin guardar en la ficha. ¿Salir igual?")) return;
+      S.fichaSucia = false;
+      S.tab = tab.dataset.tab;
+      if ($("#velo").classList.contains("abierto")) cerrarVentana();
+      render();
+      window.scrollTo?.(0, 0);
+      return;
+    }
     const el = ev.target.closest("[data-accion]");
     if (!el) { if (ev.target.id === "velo") cerrarVentana(); return; }
     const a = el.dataset.accion;
@@ -1716,6 +2224,61 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
         avisar(a === "quitarAcceso" ? "Acceso quitado" : "Acceso devuelto: ya puede volver a entrar con su mail");
         render();
       }
+      else if (a === "mas") abrirMas();
+      else if (a === "revisar") abrirRevision(id);
+      else if (a === "cerrarRevision") cerrarRevision();
+      else if (a === "revAnterior") moverRevision(-1);
+      else if (a === "revSiguiente") moverRevision(1);
+      else if (a === "revChip") {
+        const R = S.revision;
+        if (!R) return;
+        const c = el.dataset.c;
+        if (R.chips.has(c)) R.chips.delete(c); else R.chips.add(c);
+        el.setAttribute("aria-pressed", String(R.chips.has(c)));
+        el.parentElement.classList.remove("falta");
+      }
+      else if (a === "revDecidir") {
+        const R = S.revision;
+        const v = R ? version(pendientesRevision()[R.i]) : null;
+        if (!v) return;
+        const estado = el.dataset.estado;
+        const motivo = armarMotivo(estado, [...R.chips], String($("#revTexto")?.value || "").trim());
+        if (!motivo) { $("#revision .rev-chips")?.classList.add("falta"); avisar("Tocá al menos un porqué, o escribilo"); return; }
+        document.querySelectorAll("#revision .rev-decidir button").forEach((b) => { b.disabled = true; });
+        try { await decidir(v, estado, motivo); } catch (e) { document.querySelectorAll("#revision .rev-decidir button").forEach((b) => { b.disabled = false; }); throw e; }
+        R.hechas.add(v.id);
+        R.chips = new Set();
+        R.texto = "";
+        dibujarRevision();
+      }
+      else if (a === "variaciones") abrirVariaciones(id);
+      else if (a === "ficha") { const v = version(id); if (v) { el.disabled = true; try { await armarFicha(v); } finally { el.disabled = false; } } }
+      else if (a === "verFicha") verFicha(id);
+      else if (a === "fichaSumar") {
+        const lista = el.closest(".ft-sec")?.querySelector(".ft-lista");
+        if (lista) { lista.querySelector(":scope > p")?.remove(); lista.insertAdjacentHTML("beforeend", filaEditable(el.dataset.lista)); S.fichaSucia = true; lista.lastElementChild?.querySelector("input")?.focus(); }
+      }
+      else if (a === "fichaQuitar") { el.closest(".ft-fila")?.remove(); S.fichaSucia = true; }
+      else if (a === "fichaEstado" || a === "fichaWhatsapp") {
+        const form = el.closest("form");
+        const f = S.fichas.find((x) => x.id === form?.dataset.id);
+        if (!f) return;
+        const datos = leerFicha(form);
+        // WhatsApp se abre enseguida (si se espera a guardar, el navegador puede bloquear la ventana)
+        if (a === "fichaWhatsapp") window.open("https://wa.me/?text=" + encodeURIComponent(textoFicha({ ...f, ...datos })), "_blank", "noopener");
+        if (!escribe()) return;
+        const estado = a === "fichaWhatsapp" ? "enviada" : el.dataset.estado;
+        await S.db.collection("fichas").doc(f.id).update({ ...datos, estado });
+        S.fichaSucia = false;
+        render();
+        avisar(estado === "enviada" ? "Ficha guardada y marcada como enviada" : "Ficha guardada y marcada como revisada");
+      }
+      else if (a === "fichaImprimir") window.print();
+      else if (a === "iTab") { S.iTab = el.dataset.f; render(); }
+      else if (a === "borrarMarca") {
+        const m = S.marcas.find((x) => x.id === id);
+        if (m && confirm(`¿Sacar ${m.nombre} del radar?`)) { await S.db.collection("marcas").doc(id).delete(); avisar("Marca sacada"); }
+      }
       else if (a === "copiarAviso") {
         const campo = $("#ventana .link-copiar");
         try { await navigator.clipboard.writeText(campo.value); avisar("Mensaje copiado"); }
@@ -1737,6 +2300,11 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
       return;
     }
     if (ev.target.matches("[data-accion='hModelo']")) { S.hModelo = ev.target.value; render(); }
+    if (ev.target.matches("form[data-form='variaciones'] input[name='cambia']")) {
+      $("#varOpciones").innerHTML = opcionesVariar(ev.target.value);
+      contarVariaciones(ev.target.form);
+    }
+    if (ev.target.matches("form[data-form='variaciones'] input[name='op']")) contarVariaciones(ev.target.form);
     if (ev.target.matches("form[data-form='decidir'] input[name='estado']")) {
       const no = ev.target.value === "descartada";
       $("#etqPorque").textContent = no ? "¿Por qué no?" : "¿Por qué sí?";
@@ -1745,7 +2313,17 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
   });
 
   document.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape" && $("#velo").classList.contains("abierto")) cerrarVentana();
+    if (ev.key === "Escape" && $("#velo").classList.contains("abierto")) { cerrarVentana(); return; }
+    if (!S.revision || $("#velo").classList.contains("abierto")) return;
+    if (ev.key === "Escape") cerrarRevision();
+    else if (ev.target.id !== "revTexto" && ev.key === "ArrowLeft") moverRevision(-1);
+    else if (ev.target.id !== "revTexto" && ev.key === "ArrowRight") moverRevision(1);
+  });
+
+  document.addEventListener("input", (ev) => {
+    if (ev.target.closest("form[data-form='ficha']")) S.fichaSucia = true;
+    if (ev.target.id === "revTexto" && S.revision) S.revision.texto = ev.target.value;
+    if (ev.target.matches("form[data-form='variaciones'] input[name='otro']")) contarVariaciones(ev.target.form);
   });
 
   document.addEventListener("submit", async (ev) => {
@@ -1787,6 +2365,30 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
         await evento({ proyecto: "", tipo: "gusto", texto: `${TIPOS_MANUAL[d.get("tipo")]}: ${texto}` });
         f.reset();
         avisar("Anotado en el cerebro");
+      } else if (f.dataset.form === "variaciones") {
+        const v = version(f.dataset.id);
+        const cambia = String(d.get("cambia") || "color");
+        const opciones = [...new Set([...d.getAll("op").map(String), String(d.get("otro") || "").trim()].filter(Boolean))].slice(0, MAX_VARIACIONES);
+        if (!v || !opciones.length) throw { mensaje: "Elegí al menos una opción" };
+        await pedir(v.proyecto, v.id, `Variaciones de ${VARIAR[cambia].nombre.toLowerCase()} de «${v.nombre}»: ${juntar(opciones.map((o) => o.toLowerCase()))}.`, { tipo: "variaciones", cambia, opciones });
+        cerrarVentana();
+      } else if (f.dataset.form === "ficha") {
+        await S.db.collection("fichas").doc(f.dataset.id).update(leerFicha(f));
+        S.fichaSucia = false;
+        render();
+        avisar("Ficha guardada");
+      } else if (f.dataset.form === "marca") {
+        const nombre = String(d.get("nombre") || "").trim();
+        let web = String(d.get("web") || "").trim();
+        if (!nombre) throw { mensaje: "Falta el nombre de la marca" };
+        if (S.marcas.some((m) => String(m.nombre || "").toLowerCase() === nombre.toLowerCase())) throw { mensaje: "Esa marca ya está en el radar" };
+        if (web) {
+          if (!/^https?:\/\//i.test(web)) web = "https://" + web;
+          try { const u = new URL(web); web = u.origin + (u.pathname === "/" ? "" : u.pathname); } catch (_) { throw { mensaje: "Revisá la web: por ejemplo marca.com" }; }
+        }
+        await S.db.collection("marcas").add({ nombre, web, creado: ahora(), quien: S.yo || "" });
+        f.reset();
+        avisar("Marca sumada al radar");
       } else if (f.dataset.form === "sumar") {
         const nombre = String(d.get("nombre") || "").trim();
         const email = String(d.get("email") || "").trim().toLowerCase();
@@ -1823,7 +2425,7 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
   // ---------- Arranque ----------
   async function iniciar() {
     render();
-    const reloj = setTimeout(() => { if (S.listos.size < 6) { S.cargaFallo = !S.db; render(); } }, 10000);
+    const reloj = setTimeout(() => { if (S.listos.size < COLS.length) { S.cargaFallo = !S.db; render(); } }, 10000);
     const [db, assets, user, sample, downloads] = await Promise.all(["db", "assets", "user", "sample", "downloads"].map((n) => window.claude?.use?.(n).catch(() => null) ?? Promise.resolve(null)));
     S.db = db; S.assets = assets; S.user = user; S.sample = sample; S.downloads = downloads;
     if (!db) { clearTimeout(reloj); S.cargaFallo = true; render(); return; }
@@ -1831,11 +2433,11 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
       try { S.yo = (await user.id()) || ""; } catch (_) { S.yo = ""; }
       try { S.puede = await user.can("data.write"); } catch (_) { S.puede = null; }
     }
-    for (const c of ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas"]) {
+    for (const c of COLS) {
       db.collection(c).onSnapshot((snap) => {
         S[c] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         S.listos.add(c);
-        if (S.listos.size >= 6) clearTimeout(reloj);
+        if (S.listos.size >= COLS.length) clearTimeout(reloj);
         render();
       }, (err) => {
         console.error(c, err);
