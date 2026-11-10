@@ -920,9 +920,23 @@ body.con-acceso .app { visibility: hidden; }
   const porFecha = (a, b) => String(b.creado || "").localeCompare(String(a.creado || ""));
   const proyecto = (id) => S.proyectos.find((p) => p.id === id);
   const version = (id) => S.versiones.find((v) => v.id === id);
+  // Quién dibuja: en la versión web, el dibujante automático; en el taller de Claude, Claude.
+  const AUTO = !!window.TALLER_CONFIG;
+  const DIBUJA = AUTO ? "el dibujante automático" : "Claude";
+  const estadoPedido = (x) => x.estado === "hecho" ? "Dibujado"
+    : x.estado === "en_proceso" ? (AUTO ? "Dibujando…" : "Claude lo está dibujando")
+    : x.estado === "en_cola" ? "Sigue más tarde"
+    : x.estado === "error" ? "No se pudo dibujar"
+    : (AUTO ? "En cola" : "Esperando a Claude");
+  const explicaPedido = (x) => x.estado === "en_proceso"
+      ? (AUTO ? "El dibujante automático lo está dibujando. En uno o dos minutos las versiones aparecen en el Taller, en «Para revisar»." : "Claude ya lo está dibujando. Cuando termine, las versiones aparecen en el Taller, en «Para revisar».")
+    : x.estado === "en_cola" ? (x.nota || "Se terminó el cupo gratis de imágenes de hoy: sigue solo más tarde.")
+    : x.estado === "error" ? `No se pudo dibujar${x.nota ? ": " + x.nota : ""}. Podés reintentarlo.`
+    : (AUTO ? "Empieza en un momento: el dibujante automático toma los pedidos solo." : "Todavía no empezó: se dibuja cuando Joaquín le escribe a Claude «hay pedidos en el taller».");
   const quien = (id) => {
     if (!id) return "";
     if (id === "claude") return "Claude";
+    if (id === "auto") return "Dibujante automático";
     if (id === "chat") return "Joaquín, por chat";
     return S.nombres[id] || "Alguien del equipo";
   };
@@ -1012,7 +1026,7 @@ body.con-acceso .app { visibility: hidden; }
       const base = x.version ? version(x.version) : null;
       const img = base?.imagen || p.original;
       return `<button class="tarjeta en-produccion" data-accion="verPedido" data-id="${esc(x.id)}">
-        <div class="foto">${img ? `<img src="${foto(img)}" alt="" loading="lazy">` : ""}<span class="sello">En producción<small>${x.estado === "en_proceso" ? "Claude lo está dibujando" : "Esperando a Claude"}</small></span></div>
+        <div class="foto">${img ? `<img src="${foto(img)}" alt="" loading="lazy">` : ""}<span class="sello">${x.estado === "error" ? "No se pudo dibujar" : "En producción"}<small>${esc(estadoPedido(x))}</small></span></div>
         <div class="texto"><b>${esc(x.texto)}</b><p>Pedido el ${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}</p></div>
       </button>`;
     }).join("") : "";
@@ -1030,7 +1044,7 @@ body.con-acceso .app { visibility: hidden; }
         </div>
       </button>`).join("");
     const vacio = S.filtro === "propuesta"
-      ? `<div class="vacio">No hay diseños para revisar.${pedidosP.length ? ` Hay ${pedidosP.length} pedido${pedidosP.length > 1 ? "s" : ""} esperando que Claude los dibuje.` : ""}</div>`
+      ? `<div class="vacio">No hay diseños para revisar.${pedidosP.length ? ` Hay ${pedidosP.length} pedido${pedidosP.length > 1 ? "s" : ""} en producción.` : ""}</div>`
       : `<div class="vacio">No hay diseños en esta lista.</div>`;
     return `
       <div class="ficha">
@@ -1137,7 +1151,7 @@ body.con-acceso .app { visibility: hidden; }
         <select name="tipo" aria-label="Tipo">${Object.entries(TIPOS_MANUAL).map(([k, t]) => `<option value="${k}">${t}</option>`).join("")}</select>
         <input type="text" name="texto" placeholder="Ej.: prefiere herrajes en dorado envejecido" aria-label="Qué anotar" required maxlength="300">
         <button class="btn prim" type="submit">Anotar</button></form>` : "";
-    return `<div class="cabeza"><h1>Cerebro de la diseñadora</h1><p>Lo que fuimos aprendiendo de su gusto. Se actualiza solo con cada diseño aceptado o rechazado en el Historial, y se puede sumar algo a mano. Claude lo lee antes de dibujar cada versión nueva.</p></div>
+    return `<div class="cabeza"><h1>Cerebro de la diseñadora</h1><p>Lo que fuimos aprendiendo de su gusto. Se actualiza solo con cada diseño aceptado o rechazado en el Historial, y se puede sumar algo a mano. ${AUTO ? "El dibujante automático" : "Claude"} lo lee antes de dibujar cada versión nueva.</p></div>
       <div class="cerebro">
         <div class="columna si"><h3>Le gusta <small>${c.si.length + c.siManual.length}</small></h3><p>De los diseños aceptados</p><ul>${c.si.map(item).join("")}${c.siManual.map(manual).join("")}${!c.si.length && !c.siManual.length ? vacio("Todavía nada.") : ""}</ul></div>
         <div class="columna no"><h3>No le gusta <small>${c.no.length + c.noManual.length}</small></h3><p>De los diseños rechazados</p><ul>${c.no.map(item).join("")}${c.noManual.map(manual).join("")}${!c.no.length && !c.noManual.length ? vacio("Todavía nada.") : ""}</ul></div>
@@ -1154,11 +1168,11 @@ body.con-acceso .app { visibility: hidden; }
       const img = v?.imagen || p?.original;
       const hechos = (x.resultado || []).map((id) => version(id)).filter(Boolean);
       return `<div class="pedido">${img ? `<img src="${foto(img)}" alt="" loading="lazy">` : `<div class="sinfoto"></div>`}
-        <div><div class="fila"><span class="chip ${x.estado === "hecho" ? "guardada" : "pendiente"}">${x.estado === "hecho" ? "Dibujado" : x.estado === "en_proceso" ? "Claude lo está dibujando" : "Esperando a Claude"}</span>${p ? `<span class="chip">${esc(p.nombre)}</span>` : ""}${v ? `<span class="chip">sobre ${esc(v.nombre)}</span>` : ""}</div>
+        <div><div class="fila"><span class="chip ${x.estado === "hecho" ? "guardada" : x.estado === "error" ? "descartada" : "pendiente"}">${esc(estadoPedido(x))}</span>${p ? `<span class="chip">${esc(p.nombre)}</span>` : ""}${v ? `<span class="chip">sobre ${esc(v.nombre)}</span>` : ""}</div>
           <p>${esc(x.texto)}</p>
-          ${x.estado === "en_proceso" ? `<p class="estado">Claude ya lo está dibujando. Cuando termine, las versiones aparecen en el Taller, en «Para revisar».</p>` : x.estado !== "hecho" ? `<p class="estado">Todavía no empezó: se dibuja cuando Joaquín le escribe a Claude «hay pedidos en el taller».</p>` : ""}
-          <small class="quien">${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}${hechos.length ? ` · Claude subió: ${hechos.map((h) => esc(h.nombre)).join(", ")}` : ""}</small></div>
-        <div class="acciones">${p ? `<button class="btn chico" data-accion="irAModelo" data-id="${esc(p.id)}">Ver modelo</button>` : ""}${escribe() && x.estado !== "hecho" ? `<button class="quitar" data-accion="borrarPedido" data-id="${esc(x.id)}" aria-label="Cancelar pedido" title="Cancelar pedido">×</button>` : ""}</div></div>`;
+          ${x.estado !== "hecho" ? `<p class="estado">${esc(explicaPedido(x))}</p>` : ""}
+          <small class="quien">${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}${hechos.length ? ` · ${AUTO ? "Se dibujó" : "Claude subió"}: ${hechos.map((h) => esc(h.nombre)).join(", ")}` : ""}</small></div>
+        <div class="acciones">${p ? `<button class="btn chico" data-accion="irAModelo" data-id="${esc(p.id)}">Ver modelo</button>` : ""}${AUTO && escribe() && (x.estado === "error" || x.estado === "en_cola") ? `<button class="btn chico" data-accion="reintentarPedido" data-id="${esc(x.id)}">Reintentar</button>` : ""}${escribe() && x.estado !== "hecho" ? `<button class="quitar" data-accion="borrarPedido" data-id="${esc(x.id)}" aria-label="Cancelar pedido" title="Cancelar pedido">×</button>` : ""}</div></div>`;
     };
     const pend = S.pedidos.filter((x) => x.estado !== "hecho").sort(porFecha);
     const hechos = S.pedidos.filter((x) => x.estado === "hecho").sort(porFecha);
@@ -1167,12 +1181,17 @@ body.con-acceso .app { visibility: hidden; }
         <select name="proyecto" aria-label="Modelo">${ps.map((p) => `<option value="${esc(p.id)}" ${p.id === S.sel ? "selected" : ""}>${esc(p.nombre)}</option>`).join("")}</select>
         <textarea name="texto" required maxlength="800" aria-label="Qué querés que dibuje" placeholder="Ej.: la Tote en bordó, con la franja de chaguar más angosta"></textarea>
         <button class="btn prim" type="submit">Pedir</button></form>` : "";
-    return `<div class="cabeza"><h1>Pedidos de versiones</h1><p>La lista de diseños nuevos que el equipo le pide a Claude. La página no puede dibujar carteras sola: anota el pedido y Claude lo dibuja.</p></div>
+    return `<div class="cabeza"><h1>Pedidos de versiones</h1>${AUTO ? `<p>Los diseños nuevos que pide el equipo. El dibujante automático los toma solos y propone versiones siguiendo el cerebro de la diseñadora.</p></div>
+      <div class="pasos">
+        <div class="paso"><span class="num">1</span><b>Se pide</b><p>Al subir un modelo, con «Pedir versiones nuevas», con «Pedir un cambio» en un diseño, o acá abajo.</p></div>
+        <div class="paso"><span class="num">2</span><b>Se dibuja solo</b><p>En uno o dos minutos aparecen versiones nuevas. El plan gratis alcanza para unas 6 imágenes por día; si se termina, sigue solo más tarde.</p></div>
+        <div class="paso"><span class="num">3</span><b>Se revisa</b><p>Las versiones aparecen en el Taller, en «Para revisar». Aceptarlas o rechazarlas con el porqué alimenta el cerebro.</p></div>
+      </div>` : `<p>La lista de diseños nuevos que el equipo le pide a Claude. La página no puede dibujar carteras sola: anota el pedido y Claude lo dibuja.</p></div>
       <div class="pasos">
         <div class="paso"><span class="num">1</span><b>Se pide</b><p>Con «Pedir un cambio» en un diseño, «Pedir versiones nuevas» en un modelo, o acá abajo.</p></div>
         <div class="paso"><span class="num">2</span><b>Queda anotado</b><p>Aparece en esta lista como «esperando a Claude», con el modelo y lo que se pidió. La página no lo dibuja sola.</p></div>
         <div class="paso"><span class="num">3</span><b>Claude lo dibuja</b><p>Joaquín le escribe a Claude «hay pedidos en el taller». Mientras trabaja, el pedido dice «Claude lo está dibujando»; al terminar, las versiones aparecen en el Taller, en «Para revisar».</p></div>
-      </div>
+      </div>`}
       ${nuevo}
       <div class="seccion"><span class="etiqueta">Pendientes · ${pend.length}</span>${pend.length ? `<div class="lista">${pend.map(fila).join("")}</div>` : `<div class="vacio">No hay pedidos esperando.</div>`}</div>
       <div class="seccion"><span class="etiqueta">Dibujados · ${hechos.length}</span>${hechos.length ? `<div class="lista">${hechos.map(fila).join("")}</div>` : `<div class="vacio">Todavía no hay pedidos dibujados.</div>`}</div>`;
@@ -1292,7 +1311,7 @@ body.con-acceso .app { visibility: hidden; }
         <label class="opcion no"><input type="radio" name="estado" value="descartada" ${estado === "descartada" ? "checked" : ""}> Rechazado</label>
       </div>
       <label><span id="etqPorque">${estado === "descartada" ? "¿Por qué no?" : "¿Por qué sí?"}</span><textarea name="texto" required maxlength="600" placeholder="${estado === "descartada" ? "Ej.: el herraje queda pegado encima, no se integra" : "Ej.: el chaguar queda integrado a la cartera"}">${esc(decidido ? v.motivo || "" : "")}</textarea></label>
-      <p>Esta explicación pasa al cerebro de la diseñadora y Claude la tiene en cuenta en las próximas versiones.</p>
+      <p>Esta explicación pasa al cerebro de la diseñadora y ${AUTO ? "el dibujante automático" : "Claude"} la tiene en cuenta en las próximas versiones.</p>
       <div class="acciones"><button class="btn prim" type="submit">Guardar decisión</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button>
         ${decidido && escribe() ? `<button class="btn" type="button" data-accion="volverARevisar" data-id="${esc(v.id)}">Volver a «para revisar»</button>` : ""}</div>
     </form>`, true);
@@ -1303,7 +1322,7 @@ body.con-acceso .app { visibility: hidden; }
     if (!v) return;
     abrirVentana(`<form class="formulario" data-form="cambio" data-id="${esc(v.id)}">
       <h2>Pedir un cambio</h2>
-      <p>Sobre «${esc(v.nombre)}». El pedido queda en «Pedidos de versiones» y Claude lo dibuja cuando Joaquín se lo pide en el chat.</p>
+      <p>Sobre «${esc(v.nombre)}». ${AUTO ? "El dibujante automático lo dibuja en uno o dos minutos; lo vas a ver en «Para revisar»." : "El pedido queda en «Pedidos de versiones» y Claude lo dibuja cuando Joaquín se lo pide en el chat."}</p>
       <label>¿Qué cambio querés?<textarea name="texto" required maxlength="800" placeholder="Ej.: la misma, pero con los dijes más grandes y en negro"></textarea></label>
       <div class="acciones"><button class="btn prim" type="submit">Enviar pedido</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
     </form>`, true);
@@ -1316,12 +1335,12 @@ body.con-acceso .app { visibility: hidden; }
     const v = x.version ? version(x.version) : null;
     const dibujando = x.estado === "en_proceso";
     abrirVentana(`<div class="formulario">
-      <div class="fila"><span class="chip pendiente">${dibujando ? "Claude lo está dibujando" : "Esperando a Claude"}</span></div>
+      <div class="fila"><span class="chip pendiente">${esc(estadoPedido(x))}</span></div>
       <h2>En producción</h2>
       <p>${esc(p?.nombre || "")}${v ? ` · sobre ${esc(v.nombre)}` : ""} · pedido el ${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}</p>
       <p style="color:var(--tx);font-size:15px">${esc(x.texto)}</p>
-      <p>${dibujando ? "Claude ya lo está dibujando. Cuando termine, las versiones aparecen en este modelo, en «Para revisar»." : "Todavía no empezó: se dibuja cuando Joaquín le escribe a Claude «hay pedidos en el taller»."}</p>
-      <div class="acciones">${escribe() ? `<button class="btn" data-accion="borrarPedido" data-id="${esc(x.id)}">Cancelar pedido</button>` : ""}<button class="btn" data-accion="cerrar">Cerrar</button></div>
+      <p>${esc(explicaPedido(x))}</p>
+      <div class="acciones">${AUTO && escribe() && (x.estado === "error" || x.estado === "en_cola") ? `<button class="btn prim" data-accion="reintentarPedido" data-id="${esc(x.id)}">Reintentar</button>` : ""}${escribe() ? `<button class="btn" data-accion="borrarPedido" data-id="${esc(x.id)}">Cancelar pedido</button>` : ""}<button class="btn" data-accion="cerrar">Cerrar</button></div>
     </div>`, true);
     resolverNombres();
   }
@@ -1330,12 +1349,12 @@ body.con-acceso .app { visibility: hidden; }
     const nuevo = !p;
     abrirVentana(`<form class="formulario" data-form="modelo" ${p ? `data-id="${esc(p.id)}"` : ""}>
       <h2>${nuevo ? "Subir un modelo" : "Editar el modelo"}</h2>
-      <p>${nuevo ? "La foto de una cartera para transformarla al estilo Santesteban. Al subirla queda un pedido para que Claude dibuje las primeras versiones." : "Estos datos los usa Claude para las próximas versiones."}</p>
+      <p>${nuevo ? `La foto de una cartera para transformarla al estilo Santesteban. Al subirla, ${DIBUJA} dibuja solo las primeras versiones.` : `Estos datos los usa ${DIBUJA} para las próximas versiones.`}</p>
       ${nuevo ? `<label>Foto de la cartera<input type="file" name="archivo" accept="image/*" required></label>` : ""}
       <label>Nombre del modelo<input type="text" name="nombre" required maxlength="80" value="${esc(p?.nombre || "")}" placeholder="Ej.: Bandolera de flecos"></label>
       <label>Temporada<select name="temporada">${TEMPORADAS.map((t) => `<option ${(p?.temporada || "Invierno") === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
       <label>Qué se conserva del original<input type="text" name="conservar" maxlength="200" value="${esc(p?.conservar || "Solo la forma y el tamaño")}"></label>
-      <label>Notas para Claude (opcional)<textarea name="notas" maxlength="800" placeholder="Ej.: probar con asta y chaguar; nada de motivos de mar">${esc(p?.notas || "")}</textarea></label>
+      <label>Notas para el diseño (opcional)<textarea name="notas" maxlength="800" placeholder="Ej.: probar con asta y chaguar; nada de motivos de mar">${esc(p?.notas || "")}</textarea></label>
       <div class="acciones"><button class="btn prim" type="submit">${nuevo ? "Subir y pedir versiones" : "Guardar cambios"}</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
     </form>`, true);
   }
@@ -1343,7 +1362,7 @@ body.con-acceso .app { visibility: hidden; }
   function formularioPedido(p) {
     abrirVentana(`<form class="formulario" data-form="pedido">
       <h2>Pedir versiones nuevas</h2>
-      <p>Para «${esc(p.nombre)}». Queda en «Pedidos de versiones»; Claude lo dibuja siguiendo el cerebro de la diseñadora.</p>
+      <p>Para «${esc(p.nombre)}». Queda en «Pedidos de versiones»; ${DIBUJA} lo dibuja siguiendo el cerebro de la diseñadora.</p>
       <label>¿Qué querés ver?<textarea name="texto" required maxlength="800" placeholder="Ej.: dos versiones más en bordó, con asta clara y sin chaguar"></textarea></label>
       <div class="acciones"><button class="btn prim" type="submit">Enviar pedido</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
     </form>`, true);
@@ -1357,7 +1376,7 @@ body.con-acceso .app { visibility: hidden; }
   async function pedir(proyectoId, versionId, texto) {
     const ref = await S.db.collection("pedidos").add({ proyecto: proyectoId, version: versionId || "", texto, estado: "pendiente", creado: ahora(), quien: S.yo || "" });
     await evento({ proyecto: proyectoId, version: versionId || "", tipo: "pedido", texto, pedido: ref.id });
-    avisar("Pedido anotado: Claude lo va a dibujar");
+    avisar(AUTO ? "Pedido anotado: se dibuja solo en uno o dos minutos" : "Pedido anotado: Claude lo va a dibujar");
   }
 
   async function decidir(v, estado, texto) {
@@ -1493,6 +1512,11 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
         cerrarVentana();
       }
       else if (a === "verPedido") abrirPedido(id);
+      else if (a === "reintentarPedido") {
+        await S.db.collection("pedidos").doc(id).update({ estado: "pendiente", nota: "" });
+        cerrarVentana();
+        avisar("Listo: el dibujante lo vuelve a intentar");
+      }
       else if (a === "irAModelo") { S.sel = id; S.tab = "taller"; S.filtro = "propuesta"; render(); }
       else if (a === "salir") { el.disabled = true; await window.tallerWeb?.salir(); }
       else if (a === "avisoEquipo") {
