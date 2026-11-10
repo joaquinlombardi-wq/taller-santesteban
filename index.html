@@ -739,7 +739,7 @@ body.con-acceso .app { visibility: hidden; }
   function pantallaEntrar(aviso = "", email = "") {
     const a = pantalla(`<form class="acceso-form" data-acceso="mail" novalidate>
       <h1>Entrar</h1>
-      <p>${aviso ? esc(aviso) : "Escribí tu mail y te mandamos un acceso directo: un mail con un botón para entrar."}</p>
+      <p>${aviso ? esc(aviso) : "Escribí tu mail y te mandamos un mail con un botón para entrar. Sin contraseña."}</p>
       <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" value="${esc(email)}" required></label>
       <p class="acceso-error" role="alert"></p>
       <button class="btn prim" type="submit">Mandarme el acceso</button>
@@ -770,19 +770,11 @@ body.con-acceso .app { visibility: hidden; }
   function pantallaCodigo(email) {
     const a = pantalla(`<form class="acceso-form" data-acceso="codigo" data-email="${esc(email)}" novalidate>
       <h1>Revisá tu mail</h1>
-      <p>Te mandamos un mail a <b>${esc(email)}</b>. Tocá <b>Entrar al taller</b> en ese mail y listo. Puede tardar un minuto; si no aparece, mirá en correo no deseado.</p>
-      <p>Si lo abrís en otro aparato, escribí acá el código de ${LARGO} números que viene en el mismo mail.</p>
-      <label>Código<input type="text" name="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="${LARGO}" required class="codigo"></label>
+      <p>Te mandamos un mail a <b>${esc(email)}</b>. Abrilo y tocá <b>Entrar al taller</b>: se abre el taller con tu sesión. Puede tardar un minuto; si no aparece, mirá en correo no deseado.</p>
       <p class="acceso-error" role="alert"></p>
-      <button class="btn prim" type="submit">Entrar</button>
       <p class="acceso-ayuda"><a href="#" data-acceso-ir="reenviar" id="reenviar">Mandarme otro mail</a> · <a href="#" data-acceso-ir="entrar">Usar otro mail</a></p>
     </form>`);
-    const campo = a.querySelector("input[name=codigo]");
-    campo.addEventListener("input", () => {
-      campo.value = campo.value.replace(/\D/g, "").slice(0, LARGO);
-      if (campo.value.length === LARGO) campo.form.requestSubmit();
-    });
-    // Para pedir otro código hay que esperar un minuto
+    // Para pedir otro mail hay que esperar un minuto
     const link = a.querySelector("#reenviar");
     let falta = 60;
     clearInterval(espera);
