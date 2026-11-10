@@ -945,27 +945,45 @@ body.con-acceso .app { visibility: hidden; }
 
   // Si se cierra la sesión (desde Salir o porque se quitó el acceso), vuelve a la entrada.
   // Si alguien llega con el link del mail en vez del código, "arrancar" ya toma esa sesión.
-  let recuperando = false, recuperaciones = 0;
-  async function recuperar() {
-    const r = recuerdo();
-    if (!r || recuperando || recuperaciones >= 2) return null;
-    recuperando = true;
+  // Recupera la sesión con la copia propia. Una sola a la vez (si dos avisos llegan juntos, esperan la misma)
+  // y como mucho tres por visita (contando la del arranque), para no quedar en un ida y vuelta con el servidor.
+  let recuperacion = null, recuperaciones = 0;
+  function recuperar() {
+    if (!recuperacion) recuperacion = intentarRecuperar().finally(() => { recuperacion = null; });
+    return recuperacion;
+  }
+  async function intentarRecuperar() {
+    if (!recuerdo() || recuperaciones >= 3) return null;
+    try {
+      // Si otra pestaña ya la recuperó, alcanza con usar esa
+      const { data } = await sb.auth.getSession();
+      if (data?.session) return data.session;
+    } catch (_) { /* sigue */ }
     recuperaciones++;
     try {
-      const { data, error } = await sb.auth.refreshSession({ refresh_token: r });
+      const { data, error } = await sb.auth.refreshSession({ refresh_token: recuerdo() });
       if (error || !data?.session) {
-        // Solo se olvida si el servidor dice que ya no vale; si es la conexión, se intenta la próxima vez
-        if (error && !/fetch|network|Failed|timeout/i.test(String(error.message || ""))) olvidar();
+        // Solo se olvida si el servidor dice que ya no vale (error 4xx); si es la conexión, se intenta la próxima vez
+        if (error && error.status >= 400 && error.status < 500) olvidar();
         return null;
       }
       return data.session;
-    } catch (_) { return null; } finally { recuperando = false; }
+    } catch (_) { return null; }
+  }
+  // Vuelve a la entrada recargando la página, como mucho una vez por minuto (si algo falla en serie, no queda en círculo)
+  function volverAEntrar() {
+    let antes = 0;
+    try { antes = Number(sessionStorage.getItem("taller-recarga") || 0); } catch (_) { /* nada */ }
+    if (Date.now() - antes > 60000) {
+      try { sessionStorage.setItem("taller-recarga", String(Date.now())); } catch (_) { /* nada */ }
+      location.replace(direccion());
+    } else pantallaEntrar("Se cerró tu sesión. Pedí el acceso de nuevo.");
   }
   sb.auth.onAuthStateChange((evento, sesion) => {
     if (sesion && ["SIGNED_IN", "TOKEN_REFRESHED", "INITIAL_SESSION", "USER_UPDATED"].includes(evento)) recordar(sesion);
     if (evento === "SIGNED_OUT" && !saliendo && W.yo) {
       avisarServidor({ evento: "salida-sola" });
-      setTimeout(async () => { if (!(await recuperar())) location.replace(direccion()); }, 0);
+      setTimeout(async () => { if (!(await recuperar())) volverAEntrar(); }, 0);
       return;
     }
     if (evento === "SIGNED_IN" && sesion && !W.yo && !entrando && document.querySelector("form[data-acceso='codigo']")) {
