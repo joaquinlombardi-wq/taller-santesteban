@@ -383,55 +383,77 @@ body.con-acceso .app { visibility: hidden; }
   };
   const almacen = {
     getItem(k) {
-      try { const v = localStorage.getItem(k); if (v !== null) return v; } catch (_) { /* sin memoria del navegador */ }
-      if (k === CLAVE_SESION) { try { const v = cookie.leer(k); if (v !== null) return v; } catch (_) { /* sin cookies */ } }
-      return memoriaSesion.has(k) ? memoriaSesion.get(k) : null;
+      let v = null;
+      try { v = localStorage.getItem(k); } catch (_) { /* sin memoria del navegador */ }
+      if (k !== CLAVE_SESION) return v !== null ? v : (memoriaSesion.has(k) ? memoriaSesion.get(k) : null);
+      if (v === null) { try { v = cookie.leer(k); } catch (_) { /* sin cookies */ } }
+      // Si la de la memoria de la página es más nueva (porque el navegador no guardó la última), vale esa
+      const m = memoriaSesion.get(k);
+      return m !== undefined && (v === null || vence(m) > vence(v)) ? m : v;
     },
     setItem(k, v) {
       memoriaSesion.set(k, v);
-      let lsError = "";
-      try { localStorage.setItem(k, v); } catch (e) { lsError = e?.name || "error"; /* queda en la cookie o en memoria */ }
-      if (k === CLAVE_SESION) {
-        try { cookie.poner(k, v); } catch (_) { /* queda en memoria */ }
-        revisarGuardado(k, v, lsError);
-      }
+      escribir(k, v);
+      if (k === CLAVE_SESION) asegurar();
     },
     removeItem(k) {
       if (k === CLAVE_SESION && !saliendo) avisarServidor({ evento: "borrado", pila: String(new Error().stack || "").replace(/https?:[^\s)]+/g, "").slice(0, 900) });
       memoriaSesion.delete(k);
+      if (k === CLAVE_SESION) clearTimeout(reintento);
       try { localStorage.removeItem(k); } catch (_) { /* nada */ }
       if (k === CLAVE_SESION) { try { cookie.borrar(k); } catch (_) { /* nada */ } }
     },
   };
-  // Diagnóstico temporal de la sesión que se pierde al recargar: solo tamaños y nombres de claves, nunca valores.
-  let guardadoAvisado = false;
-  function usoLs() {
-    const claves = [];
-    let total = 0;
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i) || "";
-        const n = k.length + (localStorage.getItem(k) || "").length;
-        total += n;
-        claves.push([k.slice(0, 40), n]);
-      }
-    } catch (_) { /* nada */ }
-    claves.sort((a, b) => b[1] - a[1]);
-    return { total, claves: claves.length, grandes: claves.slice(0, 3) };
+  // En algunos Chrome, a veces el navegador no guarda la sesión cuando la librería de login la escribe: no da
+  // error, pero no queda (por eso al recargar pedía entrar de nuevo). Después de cada escritura se revisa que haya
+  // quedado y, si no, se vuelve a escribir desde la memoria de la página; y una vez más al salir de la página.
+  function escribir(k, v) {
+    try { localStorage.setItem(k, v); } catch (_) { /* queda en la cookie o en memoria */ }
+    if (k === CLAVE_SESION) { try { cookie.poner(k, v); } catch (_) { /* queda en memoria */ } }
   }
-  function revisarGuardado(k, v, lsError) {
-    if (guardadoAvisado) return;
-    guardadoAvisado = true;
-    let lsLeido = false, cookieLeido = false;
-    try { lsLeido = localStorage.getItem(k) === v; } catch (_) { /* nada */ }
-    try { cookieLeido = cookie.leer(k) === v; } catch (_) { /* nada */ }
-    avisarServidor({ evento: "guardado", lsError, lsLeido, cookieLeido, largo: v.length, cookieLargo: document.cookie.length, uso: usoLs() });
+  function vence(v) { try { return Number(JSON.parse(v)?.expires_at) || 0; } catch (_) { return 0; } }
+  function enNavegador() {
+    let ls = null, ck = null;
+    try { ls = localStorage.getItem(CLAVE_SESION); } catch (_) { /* nada */ }
+    try { ck = cookie.leer(CLAVE_SESION); } catch (_) { /* nada */ }
+    return { ls, ck };
   }
-  window.addEventListener("pagehide", () => {
+  // Deja guardada la sesión de la memoria; si otra pestaña guardó una más nueva, se queda con esa. true = quedó.
+  function persistir() {
+    const v = memoriaSesion.get(CLAVE_SESION);
+    if (v === undefined) return true;
+    const antes = enNavegador();
+    if (antes.ls === v && antes.ck === v) return true;
+    const otra = antes.ls ?? antes.ck;
+    if (otra !== null && otra !== v && vence(otra) > vence(v)) { memoriaSesion.set(CLAVE_SESION, otra); return true; }
+    escribir(CLAVE_SESION, v);
+    const despues = enNavegador();
+    return despues.ls === v || despues.ck === v;
+  }
+  let reintento = null, avisoNoGuardo = false;
+  function asegurar() {
+    clearTimeout(reintento);
+    if (persistir()) return;
+    if (!avisoNoGuardo) { avisoNoGuardo = true; avisarServidor({ evento: "no-guardo", ms: Math.round(performance.now()) }); }
+    let n = 0;
+    const otraVez = () => {
+      if (persistir()) { avisarServidor({ evento: "guardo-reintento", n, ms: Math.round(performance.now()) }); return; }
+      if (++n < 8) reintento = setTimeout(otraVez, 100 * 2 ** n);
+      else avisarServidor({ evento: "no-guardo-final" });
+    };
+    reintento = setTimeout(otraVez, 50);
+  }
+  // Al salir de la página o pasarla a segundo plano: última revisión, y una nota para el diagnóstico
+  function alOcultar() {
+    const v = memoriaSesion.get(CLAVE_SESION);
+    let faltaba = false;
+    try { faltaba = v !== undefined && enNavegador().ls !== v; persistir(); } catch (_) { /* nada */ }
     try {
-      localStorage.setItem("taller-al-salir", JSON.stringify({ t: new Date().toISOString(), ls: !!localStorage.getItem(CLAVE_SESION), cookie: cookie.leer(CLAVE_SESION) !== null, memoria: memoriaSesion.has(CLAVE_SESION) }));
+      localStorage.setItem("taller-al-salir", JSON.stringify({ t: new Date().toISOString(), faltaba, ls: !!localStorage.getItem(CLAVE_SESION), cookie: cookie.leer(CLAVE_SESION) !== null, memoria: memoriaSesion.has(CLAVE_SESION) }));
     } catch (_) { /* nada */ }
-  });
+  }
+  window.addEventListener("pagehide", alOcultar);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") alOcultar(); });
   // ¿Este navegador deja guardar la sesión? (se informa en la pantalla de entrada y al servidor, sin datos personales)
   function revisarAlmacen() {
     const d = { ls: "ok", cookies: "ok", sesionLs: false, sesionCookie: false, visitaAnterior: null };
@@ -451,6 +473,16 @@ body.con-acceso .app { visibility: hidden; }
   // nadie toque «Salir»; con esta copia el taller la recupera solo. Se borra únicamente al tocar «Salir».
   const RECUERDO = "taller-recuerdo";
   let saliendo = false;
+  let canalSesion = null;
+  try {
+    canalSesion = new BroadcastChannel("taller-sesion");
+    canalSesion.onmessage = (e) => {
+      if (e.data !== "salir" || saliendo) return;
+      saliendo = true;
+      memoriaSesion.clear();
+      location.replace(direccion());
+    };
+  } catch (_) { /* navegador sin BroadcastChannel */ }
   function recordar(s) {
     if (!s?.refresh_token) return;
     try { localStorage.setItem(RECUERDO, s.refresh_token); } catch (_) { /* queda la cookie */ }
@@ -759,8 +791,10 @@ body.con-acceso .app { visibility: hidden; }
   async function salir() {
     saliendo = true;
     olvidar();
+    try { canalSesion?.postMessage("salir"); } catch (_) { /* nada */ }
     try { localStorage.removeItem(LS_FOTOS); } catch (_) { /* nada */ }
     try { await sb.auth.signOut({ scope: "local" }); } catch (_) { /* nada */ }
+    almacen.removeItem(CLAVE_SESION); // por si la librería no pudo cerrarla (por ejemplo, sin conexión)
     location.replace(direccion());
   }
   window.tallerWeb = {
@@ -1033,7 +1067,7 @@ body.con-acceso .app { visibility: hidden; }
     if (location.hash.includes("access_token") || location.hash.includes("error")) history.replaceState(null, "", direccion() + location.search);
     if (!sesion && recuerdo()) {
       sesion = await recuperar();
-      avisarServidor({ evento: sesion ? "recuperada" : "no-recuperada", tenia: true, alAbrir: { sesionLs: ALMACEN.sesionLs, sesionCookie: ALMACEN.sesionCookie, alSalir: ALMACEN.alSalir }, uso: usoLs() });
+      avisarServidor({ evento: sesion ? "recuperada" : "no-recuperada", tenia: true, alAbrir: { sesionLs: ALMACEN.sesionLs, sesionCookie: ALMACEN.sesionCookie, alSalir: ALMACEN.alSalir } });
     }
     if (sesion) recordar(sesion);
     if (!sesion) { pantallaEntrar(botonViejo ? "Ese botón del mail ya se usó o venció. Pedí uno nuevo acá abajo." : ""); return; }
