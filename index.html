@@ -393,6 +393,7 @@ body.con-acceso .app { visibility: hidden; }
       if (k === CLAVE_SESION) { try { cookie.poner(k, v); } catch (_) { /* queda en memoria */ } }
     },
     removeItem(k) {
+      if (k === CLAVE_SESION && !saliendo) avisarServidor({ evento: "borrado", pila: String(new Error().stack || "").replace(/https?:[^\s)]+/g, "").slice(0, 900) });
       memoriaSesion.delete(k);
       try { localStorage.removeItem(k); } catch (_) { /* nada */ }
       if (k === CLAVE_SESION) { try { cookie.borrar(k); } catch (_) { /* nada */ } }
@@ -411,6 +412,29 @@ body.con-acceso .app { visibility: hidden; }
     return d;
   }
   const ALMACEN = revisarAlmacen();
+
+  // Copia propia de la sesión (solo el dato para renovarla). La librería de login a veces borra la suya sin que
+  // nadie toque «Salir»; con esta copia el taller la recupera solo. Se borra únicamente al tocar «Salir».
+  const RECUERDO = "taller-recuerdo";
+  let saliendo = false;
+  function recordar(s) {
+    if (!s?.refresh_token) return;
+    try { localStorage.setItem(RECUERDO, s.refresh_token); } catch (_) { /* queda la cookie */ }
+    try { cookie.poner(RECUERDO, s.refresh_token, 90); } catch (_) { /* nada */ }
+  }
+  function recuerdo() {
+    try { const v = localStorage.getItem(RECUERDO); if (v) return v; } catch (_) { /* nada */ }
+    try { return cookie.leer(RECUERDO); } catch (_) { return null; }
+  }
+  function olvidar() {
+    try { localStorage.removeItem(RECUERDO); } catch (_) { /* nada */ }
+    try { cookie.borrar(RECUERDO); } catch (_) { /* nada */ }
+  }
+  let avisos = 0;
+  function avisarServidor(diag) {
+    if (avisos++ > 5) return;
+    setTimeout(() => { funcion("estado", { diag: { ...diag, ua: navigator.userAgent.slice(0, 120) } }).catch(() => {}); }, 0);
+  }
   const sb = window.supabase.createClient(C.url, C.clave, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: almacen },
   });
@@ -699,8 +723,10 @@ body.con-acceso .app { visibility: hidden; }
   }
   const direccion = () => location.origin + location.pathname;
   async function salir() {
+    saliendo = true;
+    olvidar();
     try { localStorage.removeItem(LS_FOTOS); } catch (_) { /* nada */ }
-    try { await sb.auth.signOut(); } catch (_) { /* nada */ }
+    try { await sb.auth.signOut({ scope: "local" }); } catch (_) { /* nada */ }
     location.replace(direccion());
   }
   window.tallerWeb = {
@@ -919,8 +945,29 @@ body.con-acceso .app { visibility: hidden; }
 
   // Si se cierra la sesión (desde Salir o porque se quitó el acceso), vuelve a la entrada.
   // Si alguien llega con el link del mail en vez del código, "arrancar" ya toma esa sesión.
+  let recuperando = false, recuperaciones = 0;
+  async function recuperar() {
+    const r = recuerdo();
+    if (!r || recuperando || recuperaciones >= 2) return null;
+    recuperando = true;
+    recuperaciones++;
+    try {
+      const { data, error } = await sb.auth.refreshSession({ refresh_token: r });
+      if (error || !data?.session) {
+        // Solo se olvida si el servidor dice que ya no vale; si es la conexión, se intenta la próxima vez
+        if (error && !/fetch|network|Failed|timeout/i.test(String(error.message || ""))) olvidar();
+        return null;
+      }
+      return data.session;
+    } catch (_) { return null; } finally { recuperando = false; }
+  }
   sb.auth.onAuthStateChange((evento, sesion) => {
-    if (evento === "SIGNED_OUT" && W.yo) location.replace(direccion());
+    if (sesion && ["SIGNED_IN", "TOKEN_REFRESHED", "INITIAL_SESSION", "USER_UPDATED"].includes(evento)) recordar(sesion);
+    if (evento === "SIGNED_OUT" && !saliendo && W.yo) {
+      avisarServidor({ evento: "salida-sola" });
+      setTimeout(async () => { if (!(await recuperar())) location.replace(direccion()); }, 0);
+      return;
+    }
     if (evento === "SIGNED_IN" && sesion && !W.yo && !entrando && document.querySelector("form[data-acceso='codigo']")) {
       setTimeout(() => continuar(sesion), 300);
     }
@@ -930,8 +977,14 @@ body.con-acceso .app { visibility: hidden; }
     esperando();
     let sesion = null;
     try { ({ data: { session: sesion } } = await sb.auth.getSession()); } catch (_) { /* sin sesión */ }
+    const botonViejo = /error_code=otp_expired|error=access_denied/.test(location.hash);
     if (location.hash.includes("access_token") || location.hash.includes("error")) history.replaceState(null, "", direccion() + location.search);
-    if (!sesion) { pantallaEntrar(); return; }
+    if (!sesion && recuerdo()) {
+      sesion = await recuperar();
+      avisarServidor({ evento: sesion ? "recuperada" : "no-recuperada", tenia: true });
+    }
+    if (sesion) recordar(sesion);
+    if (!sesion) { pantallaEntrar(botonViejo ? "Ese botón del mail ya se usó o venció. Pedí uno nuevo acá abajo." : ""); return; }
     await continuar(sesion);
   }
   document.body.classList.add("con-acceso");
