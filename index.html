@@ -2044,14 +2044,30 @@ button.inicio-card:hover { border-color: var(--tx); }
     "El modelo de visión mira cada foto: tipo, color, material y herrajes.",
     "Si una web no deja que la lean programas, el radar la saltea y lo avisa.",
   ];
+  // Cómo le fue a cada marca en la última actualización
+  const MOTIVO = { bloqueado: "no deja que la lean programas", esperar: "pidió que esperemos", sin_productos: "no encontré productos en su web" };
+  function resultadoRadar(est, ms) {
+    const empezo = Date.parse(est?.empezado || 0) - 2000;
+    const deAhora = ms.map((m) => [m, est?.porMarca?.[m.id]]).filter(([, r]) => r && Date.parse(r.cuando || 0) >= empezo);
+    const bien = deAhora.filter(([, r]) => r.estado === "ok");
+    const mal = deAhora.filter(([, r]) => r.estado !== "ok");
+    return { bien, mal, listaMal: mal.map(([m, r]) => `${esc(m.nombre)} (${MOTIVO[r.estado] || "no se pudo leer su web"})`).join(", ") };
+  }
   function panelRadar(est, ms) {
     const andando = radarAndando(est);
     const boton = escribe() && window.tallerWeb ? `<button class="btn" data-accion="actualizarRadar" ${andando ? "disabled" : ""}>${ICONO_ACT}${andando ? "Actualizando…" : "Actualizar información"}</button>` : "";
     if (!andando) {
       const recien = est?.estado === "listo" && Date.now() - Date.parse(est.terminado || 0) < 3 * 60e3;
-      const n = Number(est?.total) || ms.length;
+      const r = resultadoRadar(est, ms);
+      let resumen = "";
+      if (recien) {
+        const nuevas = Number(est.nuevas) || 0;
+        if (!r.bien.length && r.mal.length) resumen = `No se pudo leer ${r.mal.length === 1 ? "la marca" : "ninguna de las marcas"}: ${r.listaMal}. Probá con marcas que vendan online en su propia tienda, por ejemplo en Tienda Nube o Shopify.`;
+        else if (r.bien.length) resumen = (nuevas ? `Listo: ${nuevas} novedades nuevas de ${r.bien.length} marca${r.bien.length === 1 ? "" : "s"}.` : `Listo: ${r.bien.length === 1 ? "la marca no sacó" : `las ${r.bien.length} marcas no sacaron`} nada nuevo desde la última vez.`)
+          + (r.mal.length ? ` No se pudo leer: ${r.listaMal}.` : "") + (nuevas ? ` <a class="enlace" data-accion="iTab" data-f="tendencias">Ver tendencias</a>` : "");
+      }
       return `<div class="radar-barra">${boton}<span class="estado">${est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}` : "Todavía no se actualizó."}</span>
-        ${recien ? `<p class="radar-listo">${ICONO.ok}<span>Listo: ${est.nuevas ? `${est.nuevas} novedades nuevas` : "no hubo novedades nuevas"} de ${n} marca${n === 1 ? "" : "s"}.${est.nuevas ? ` <a class="enlace" data-accion="iTab" data-f="tendencias">Ver tendencias</a>` : ""}</span></p>` : ""}
+        ${resumen ? `<p class="radar-listo">${r.bien.length ? ICONO.ok : ICONO.cerrar}<span>${resumen}</span></p>` : ""}
         ${!recien && est?.nota ? `<p class="estado" style="flex-basis:100%">${esc(est.nota)}</p>` : ""}</div>`;
     }
     const cola = est.cola || [];
@@ -2130,7 +2146,14 @@ button.inicio-card:hover { border-color: var(--tx); }
         <span class="etiqueta">${esc(n.marcaNombre || "")}</span><b>${esc(n.nombre)}</b>
         ${precioTexto(n) ? `<small>${esc(precioTexto(n))}</small>` : ""}${!n.analisis ? `<small class="anotando" style="${fase(1400)}" aria-label="Anotando"></small>` : notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
     };
-    return cabeza + barra + filtro + (novs.length ? `<div class="novedades">${novs.map(tarjeta).join("")}</div>` : `<div class="vacio">${andando ? "Leyendo las webs de las marcas…" : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`);
+    const sinNovedades = () => {
+      if (andando) return "Leyendo las webs de las marcas…";
+      if (!est?.terminado) return "Tocá «Actualizar información» para traer las novedades de las marcas.";
+      const r = resultadoRadar(est, ms);
+      if (r.mal.length && !r.bien.length) return `Todavía no hay novedades: no se pudo leer ${r.listaMal}. Sumá marcas que vendan online en su propia tienda (por ejemplo en Tienda Nube o Shopify) y volvé a actualizar.`;
+      return "Todavía no hay novedades. Volvé a actualizar más adelante.";
+    };
+    return cabeza + barra + filtro + (novs.length ? `<div class="novedades">${novs.map(tarjeta).join("")}</div>` : `<div class="vacio">${sinNovedades()}</div>`);
   }
 
   // ---------- Ventas (con Tienda Nube) ----------
