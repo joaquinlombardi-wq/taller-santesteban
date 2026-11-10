@@ -684,17 +684,21 @@ body.con-acceso .app { visibility: hidden; }
       <button class="btn prim" type="submit">Mandarme el código</button>
       <p class="acceso-ayuda oculto" id="primeraVez">Es la primera vez que se usa el taller: <a href="#" data-acceso-ir="primer">crear la cuenta de administración</a>.</p>
     </form>`);
-    funcion("estado").then((r) => { if (r && !r.hayMiembros) a.querySelector("#primeraVez")?.classList.remove("oculto"); }).catch(() => {});
+    // Si todavía no hay ninguna cuenta, lo único que se puede hacer es crear la primera: vamos directo ahí.
+    funcion("estado").then((r) => {
+      if (!r || r.hayMiembros || !a.querySelector("form[data-acceso='mail']")) return;
+      pantallaPrimer(a.querySelector("input[name=email]")?.value || email, true);
+    }).catch(() => {});
   }
-  function pantallaPrimer() {
+  function pantallaPrimer(email = "", primeraVez = false) {
     pantalla(`<form class="acceso-form" data-acceso="primer" novalidate>
       <h1>Cuenta de administración</h1>
-      <p>Es la cuenta de quien maneja el taller: puede sumar personas y quitar accesos. Para entrar te mandamos un código a este mail.</p>
+      <p>${primeraVez ? "Todavía no hay ninguna cuenta en el taller: empezá por la tuya. " : ""}Es la cuenta de quien maneja el taller: puede sumar personas y quitar accesos. Para entrar te mandamos un código a este mail.</p>
       <label>Nombre<input type="text" name="nombre" maxlength="80" autocomplete="name" required></label>
-      <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" required></label>
+      <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" value="${esc(email)}" required></label>
       <p class="acceso-error" role="alert"></p>
       <button class="btn prim" type="submit">Crear y mandarme el código</button>
-      <p class="acceso-ayuda"><a href="#" data-acceso-ir="entrar">Volver</a></p>
+      ${primeraVez ? "" : `<p class="acceso-ayuda"><a href="#" data-acceso-ir="entrar">Volver</a></p>`}
     </form>`);
   }
   let espera = null;
