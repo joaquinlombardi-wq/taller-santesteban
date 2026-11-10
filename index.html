@@ -172,6 +172,15 @@ label textarea, label input, label select { font-size: 14px; letter-spacing: 0; 
 .prueba a { text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .quitar { border: 0; background: none; color: var(--mu); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; }
 .quitar:hover { color: var(--tx); }
+.gusto-acciones { display: flex; align-items: flex-start; margin: -8px -6px 0 0; }
+.gusto-acciones button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; }
+.gusto-acciones svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.columna li.editando { display: block; }
+.editar-gusto { display: flex; flex-direction: column; gap: 8px; }
+.editar-gusto textarea { min-height: 84px; }
+.editar-pie { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.editar-pie select { width: auto; flex: 1 1 140px; }
+.editar-pie .estado { flex: 1 1 140px; margin: 0; font-size: 12px; }
 .agregar { display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 10px; margin-top: 30px; }
 
 /* Pedidos */
@@ -1317,7 +1326,7 @@ button.inicio-card:hover { border-color: var(--tx); }
   };
   const S = {
     proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [], fichas: [], marcas: [], novedades: [], radar: [],
-    revision: null, iTab: null, iMarca: "", fichaSel: null, fichaSucia: false, radarVistas: new Set(), forzar: false, vistaPendiente: false,
+    revision: null, editGusto: null, iTab: null, iMarca: "", fichaSel: null, fichaSucia: false, radarVistas: new Set(), forzar: false, vistaPendiente: false,
     listos: new Set(), tab: "inicio", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
     db: null, assets: null, user: null, sample: null, downloads: null, yo: "", puede: null, nombres: {}, cargaFallo: false
   };
@@ -1591,15 +1600,29 @@ button.inicio-card:hover { border-color: var(--tx); }
     return ev.length ? `<div class="linea">${filas}</div>` : `<div class="vacio">Todavía no hay movimientos.</div>`;
   }
 
+  const ICONO_LAPIZ = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>`;
   function vCerebro() {
     const c = cerebro();
+    const ed = S.editGusto;
+    // Cada cosa se puede corregir (lápiz) o sacar del cerebro (×). Lo que viene de un diseño cambia su explicación:
+    // el diseño sigue aceptado o rechazado.
+    const acciones = (clase, id) => (escribe()
+      ? `<span class="gusto-acciones"><button class="quitar" data-accion="editarGusto" data-clase="${clase}" data-id="${esc(id)}" aria-label="Corregir" title="Corregir">${ICONO_LAPIZ}</button><button class="quitar" data-accion="${clase === "gusto" ? "borrarGusto" : "sacarDelCerebro"}" data-id="${esc(id)}" aria-label="Sacar del cerebro" title="Sacar del cerebro">×</button></span>`
+      : "<span></span>");
+    const editor = (clase, id, texto, pie) => `<li class="editando"><form class="editar-gusto" data-form="editarGusto" data-clase="${clase}" data-id="${esc(id)}">
+        <textarea name="texto" required maxlength="${clase === "gusto" ? 300 : 600}" aria-label="Corregir el texto">${esc(texto)}</textarea>
+        <div class="editar-pie">${pie}<button class="btn chico" type="button" data-accion="cancelarEdicion">Cancelar</button><button class="btn prim chico" type="submit">Guardar</button></div></form></li>`;
     const item = (v) => {
+      if (ed?.clase === "version" && ed.id === v.id) return editor("version", v.id, ed.borrador ?? v.motivo, `<p class="estado">${v.estado === "guardada" ? "Por qué sí" : "Por qué no"} de «${esc(v.nombre)}»</p>`);
       const p = proyecto(v.proyecto);
-      return `<li><span>${esc(v.motivo)}</span><span></span>
+      return `<li><span>${esc(v.motivo)}</span>${acciones("version", v.id)}
         <span class="prueba">${v.imagen ? `<img src="${foto(v.imagen)}" alt="" data-accion="abrir" data-id="${esc(v.id)}">` : ""}<span>De <a data-accion="abrir" data-id="${esc(v.id)}">${esc(v.nombre)}</a>${p ? ` · ${esc(p.nombre)}` : ""}${v.decidido ? ` · ${esc(fecha(v.decidido))}` : ""}</span></span></li>`;
     };
-    const manual = (g) => `<li><span>${esc(g.texto)}</span>${escribe() ? `<button class="quitar" data-accion="borrarGusto" data-id="${esc(g.id)}" aria-label="Quitar" title="Quitar">×</button>` : "<span></span>"}
-      <span class="prueba"><span>Anotado a mano · ${esc(fecha(g.creado))}${g.quien ? ` · ${persona(g.quien)}` : ""}</span></span></li>`;
+    const manual = (g) => {
+      if (ed?.clase === "gusto" && ed.id === g.id) return editor("gusto", g.id, ed.borrador ?? g.texto, `<select name="tipo" aria-label="Dónde va">${Object.entries(TIPOS_MANUAL).map(([k, tx]) => `<option value="${k}" ${(ed.tipo || g.tipo) === k ? "selected" : ""}>${tx}</option>`).join("")}</select>`);
+      return `<li><span>${esc(g.texto)}</span>${acciones("gusto", g.id)}
+      <span class="prueba"><span>Anotado a mano · ${esc(fecha(g.creado))}${g.quien ? ` · ${persona(g.quien)}` : ""}${g.editado ? ` · corregido el ${esc(fecha(g.editado))}` : ""}</span></span></li>`;
+    };
     const vacio = (t) => `<li><span style="color:var(--mu)">${t}</span></li>`;
     const agregar = escribe() ? `<form class="agregar" data-form="gusto">
         <select name="tipo" aria-label="Tipo">${Object.entries(TIPOS_MANUAL).map(([k, t]) => `<option value="${k}">${t}</option>`).join("")}</select>
@@ -1612,7 +1635,7 @@ button.inicio-card:hover { border-color: var(--tx); }
         <div class="columna reglas"><h3>Reglas <small>${c.reglas.length}</small></h3><p>Criterios fijos para cualquier modelo</p><ul>${c.reglas.map(manual).join("") || vacio("Todavía nada.")}</ul></div>
       </div>
       ${agregar}
-      <p class="estado" style="margin-top:12px">Para corregir algo que vino de un diseño, cambiá su explicación en el Historial.</p>`;
+      ${escribe() ? `<p class="estado" style="margin-top:12px">Para pulirlo: tocá el lápiz para corregir algo o la × para sacarlo del cerebro. Si viene de un diseño, el diseño sigue aceptado o rechazado: solo cambia su explicación.</p>` : ""}`;
   }
 
   function vPedidos() {
@@ -2453,9 +2476,28 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
       else if (a === "borrarIdea") { await S.db.collection("ideas").doc(id).delete(); }
       else if (a === "borrarGusto") {
         const g = S.gusto.find((x) => x.id === id);
-        await S.db.collection("gusto").doc(id).delete();
-        if (g) await evento({ proyecto: "", tipo: "gusto", texto: `Se quitó del cerebro: ${g.texto}` });
+        if (g && confirm(`¿Sacar esto del cerebro?\n\n«${g.texto}»`)) {
+          if (S.editGusto?.id === id) S.editGusto = null;
+          await S.db.collection("gusto").doc(id).delete();
+          await evento({ proyecto: "", tipo: "gusto", texto: `Se quitó del cerebro: ${g.texto}` });
+          avisar("Listo, salió del cerebro");
+        }
       }
+      else if (a === "sacarDelCerebro") {
+        const v = version(id);
+        if (v && confirm(`¿Sacar esto del cerebro?\n\n«${v.motivo}»\n\nEl diseño «${v.nombre}» sigue ${v.estado === "guardada" ? "aceptado" : "rechazado"}: solo se borra esta explicación.`)) {
+          if (S.editGusto?.id === id) S.editGusto = null;
+          await S.db.collection("versiones").doc(id).update({ motivo: "" });
+          await evento({ proyecto: v.proyecto, version: v.id, tipo: "gusto", texto: `Se quitó del cerebro: ${v.motivo}` });
+          avisar("Listo, salió del cerebro");
+        }
+      }
+      else if (a === "editarGusto") {
+        S.editGusto = { clase: el.dataset.clase, id };
+        render();
+        setTimeout(() => { const tx = $("#vista .editar-gusto textarea"); if (tx) { tx.focus(); tx.setSelectionRange(tx.value.length, tx.value.length); } }, 60);
+      }
+      else if (a === "cancelarEdicion") { S.editGusto = null; render(); }
       else if (a === "borrarPedido") {
         const x = S.pedidos.find((p) => p.id === id);
         await S.db.collection("pedidos").doc(id).delete();
@@ -2641,6 +2683,35 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
         await evento({ proyecto: "", tipo: "gusto", texto: `${TIPOS_MANUAL[d.get("tipo")]}: ${texto}` });
         f.reset();
         avisar("Anotado en el cerebro");
+      } else if (f.dataset.form === "editarGusto") {
+        const texto = String(d.get("texto") || "").trim();
+        if (!texto) throw { mensaje: "Escribí algo, o tocá la × para sacarlo del cerebro" };
+        const ed = { clase: f.dataset.clase, id: f.dataset.id, tipo: String(d.get("tipo") || "") };
+        S.editGusto = null;
+        try {
+          if (ed.clase === "gusto") {
+            const g = S.gusto.find((x) => x.id === ed.id);
+            const tipo = TIPOS_MANUAL[ed.tipo] ? ed.tipo : g?.tipo || "gusta";
+            if (g && (g.texto !== texto || g.tipo !== tipo)) {
+              await S.db.collection("gusto").doc(g.id).update({ texto, tipo, editado: ahora(), editadoPor: S.yo || "" });
+              await evento({ proyecto: "", tipo: "gusto", texto: `Se corrigió en el cerebro (${TIPOS_MANUAL[tipo]}): ${texto}` });
+            }
+          } else {
+            const v = version(ed.id);
+            if (v && v.motivo !== texto) {
+              await S.db.collection("versiones").doc(v.id).update({ motivo: texto });
+              await evento({ proyecto: v.proyecto, version: v.id, tipo: "nota", texto: `Nueva explicación: ${texto}` });
+            }
+          }
+        } catch (e) {
+          S.editGusto = { ...ed, borrador: texto };
+          S.forzar = true;
+          render();
+          throw e;
+        }
+        S.forzar = true;
+        render();
+        avisar("Guardado en el cerebro");
       } else if (f.dataset.form === "variaciones") {
         const v = version(f.dataset.id);
         const cambia = String(d.get("cambia") || "color");
