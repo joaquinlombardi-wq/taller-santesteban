@@ -735,11 +735,13 @@ body.con-acceso .app { visibility: hidden; }
       <button class="btn" type="button" data-acceso-ir="salir">Salir</button>
     </div>`);
   }
-  function pantallaError() {
+  function pantallaError(e) {
+    const detalle = [e?.code, e?.message].filter(Boolean).join(" · ");
     pantalla(`<div class="acceso-form">
       <h1>No se pudo abrir el taller</h1>
       <p>Revisá tu conexión y volvé a intentar. Si sigue sin abrir, avisale a quien administra el taller.</p>
       <button class="btn prim" type="button" data-acceso-ir="reintentar">Reintentar</button>
+      ${detalle ? `<p class="acceso-ayuda">Detalle para quien administra: ${esc(detalle)}</p>` : ""}
     </div>`);
   }
 
@@ -754,19 +756,34 @@ body.con-acceso .app { visibility: hidden; }
     return "No se pudo mandar el código; probá de nuevo en un rato.";
   }
 
-  async function continuar(sesion) {
-    W.sesion = sesion;
+  // Abre el taller con la sesión ya iniciada. Una sola vez a la vez, y con reintentos por si la red falla.
+  let entrando = null;
+  function continuar(sesion) {
+    if (!entrando) entrando = abrirConSesion(sesion).finally(() => { entrando = null; });
+    return entrando;
+  }
+  async function abrirConSesion(sesion) {
     esperando();
-    try {
-      await cargarMiembros();
-      if (!W.yo) { pantallaSinAcceso(sesion?.user?.email); return; }
-      suscribir();
-      await cargarTodo();
-    } catch (e) {
-      console.error(e);
-      pantallaError();
-      return;
+    let problema = null;
+    for (let intento = 0; intento < 3; intento++) {
+      try {
+        // Primero me aseguro de que la sesión quedó guardada: si se piden datos antes, la base los niega.
+        const { data } = await sb.auth.getSession();
+        W.sesion = data?.session || sesion;
+        if (!W.sesion) { pantallaEntrar(); return; }
+        await cargarMiembros();
+        if (!W.yo) { pantallaSinAcceso(W.sesion.user?.email); return; }
+        suscribir();
+        await cargarTodo();
+        problema = null;
+        break;
+      } catch (e) {
+        problema = e;
+        console.error(e);
+        await new Promise((r) => setTimeout(r, 800 * (intento + 1)));
+      }
     }
+    if (problema) { pantallaError(problema); return; }
     clearInterval(espera);
     quitarPantalla();
     abrirTaller();
@@ -838,10 +855,10 @@ body.con-acceso .app { visibility: hidden; }
     }
   }, true);
 
-  sb.auth.onAuthStateChange((evento, sesion) => {
+  // Si se cierra la sesión (desde Salir o porque se quitó el acceso), vuelve a la entrada.
+  // Si alguien llega con el link del mail en vez del código, "arrancar" ya toma esa sesión.
+  sb.auth.onAuthStateChange((evento) => {
     if (evento === "SIGNED_OUT" && W.yo) location.replace(direccion());
-    // Si alguien entró con el link del mail (en vez del código), sigue igual
-    if (evento === "SIGNED_IN" && sesion && !W.sesion && document.getElementById("acceso")) setTimeout(() => continuar(sesion), 0);
   });
 
   async function arrancar() {
