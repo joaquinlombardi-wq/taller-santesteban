@@ -484,12 +484,19 @@ button.inicio-card:hover { border-color: var(--tx); }
 .nove small { color: var(--mu); font-size: 11.5px; }
 .sello-nuevo { position: absolute; top: 8px; left: 8px; background: #000; color: #fff; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; padding: 3px 6px; }
 .sello-nota { position: absolute; top: 8px; left: 8px; background: #fff; color: #000; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; padding: 3px 6px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); }
-.nove.nota .nove-foto img { object-fit: cover; }
+.nove.nota .nove-foto img, .nove.pasarela .nove-foto img { object-fit: cover; }
 .tendencias { display: flex; flex-direction: column; border-top: 1px solid var(--tx); max-width: 640px; }
 .tendencia { padding: 12px 0; border-bottom: 1px solid var(--li); display: flex; flex-direction: column; gap: 7px; }
 .tendencia div { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .tendencia span { color: var(--mu); font-size: 12px; white-space: nowrap; }
 .tendencia .barrita { margin: 0; }
+.tend-resumen { border: 1px solid var(--tx); padding: 14px 16px; margin: 0 0 18px; max-width: 640px; }
+.tend-resumen p { margin: 6px 0 0; font-size: 15px; line-height: 1.45; }
+.tendencia .tend-fotos { justify-content: flex-start; align-items: flex-start; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none; }
+.tendencia .tend-fotos::-webkit-scrollbar { display: none; }
+.tend-fotos a { flex: 0 0 78px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--mu); min-width: 0; }
+.tend-fotos img { width: 78px; height: 78px; object-fit: cover; background: #F4F4F4; display: block; }
+.tend-fotos small { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .marcas small.nota { display: block; }
 @media (max-width: 600px) { .novedades { grid-template-columns: 1fr 1fr; gap: 20px 12px; } }
 
@@ -1877,9 +1884,11 @@ button.inicio-card:hover { border-color: var(--tx); }
       </section>` : "";
     const est = estadoRadar();
     const semana = S.novedades.filter((n) => Date.parse(n.visto || 0) > Date.now() - 7 * DIA).length;
+    const tInicio = nm && !radarAndando(est) ? tendencias() : null;
+    const fraseInicio = fraseTendencia(tInicio);
     const inspiracion = `<button class="inicio-card fila-card" data-tab="inspiracion"><span><span class="etiqueta">Inspiración</span>
-        <b>${radarAndando(est) ? `El radar está trabajando ${PUNTOS()}` : !nm ? "Sumá las marcas que seguís" : S.novedades.length ? `${semana || S.novedades.length} novedades ${semana ? "esta semana" : "en el radar"} · ${nm} marca${nm === 1 ? "" : "s"}` : `${nm} marca${nm === 1 ? "" : "s"} en el radar`}</b>
-        <small>${!nm ? "Para ver qué están sacando y qué se repite." : radarAndando(est) ? ((est.cola || []).length ? `Leyendo ${esc(S.marcas.find((m) => m.id === est.cola[0])?.nombre || "las webs")}…` : (est.colaRevistas || []).length ? "Buscando a tus marcas en revistas…" : "Mirando las fotos y anotando cada novedad…") : est?.terminado ? `Actualizado ${hace(est.terminado)}.` : "Tocá «Actualizar información» para traer sus novedades."}</small></span>${FLECHA}</button>`;
+        <b>${radarAndando(est) ? `El radar está trabajando ${PUNTOS()}` : !nm ? "Sumá las marcas que seguís" : fraseInicio ? `Tendencia: ${esc(fraseInicio)}` : S.novedades.length ? `${semana || S.novedades.length} novedades ${semana ? "esta semana" : "en el radar"} · ${nm} marca${nm === 1 ? "" : "s"}` : `${nm} marca${nm === 1 ? "" : "s"} en el radar`}</b>
+        <small>${!nm ? "Para ver qué están sacando y qué se repite." : radarAndando(est) ? ((est.cola || []).length ? `Leyendo ${esc(S.marcas.find((m) => m.id === est.cola[0])?.nombre || "las webs")}…` : (est.colaRevistas || []).length ? "Buscando a tus marcas en revistas…" : "Mirando las fotos y anotando cada novedad…") : est?.terminado ? `${fraseInicio && tInicio.nombres.length ? `Lo que más se repite en ${esc(juntar(tInicio.nombres))}. ` : ""}Actualizado ${hace(est.terminado)}.` : "Tocá «Actualizar información» para traer sus novedades."}</small></span>${FLECHA}</button>`;
     const fichas = fb.length ? `<button class="inicio-card fila-card" data-tab="produccion"><span><span class="etiqueta">Fichas por completar · ${fb.length}</span>
         <b>${esc(juntar(fb.slice(0, 3).map((f) => f.nombre)))}${fb.length > 3 ? ` y ${fb.length - 3} más` : ""}</b>
         <small>Revisá medidas, materiales y herrajes antes de mandarlas.</small></span>${FLECHA}</button>` : "";
@@ -2044,21 +2053,38 @@ button.inicio-card:hover { border-color: var(--tx); }
     const novs = S.novedades.filter((n) => (n.analisis?.por === "foto" || n.analisis?.por === "nombre") && Date.parse(n.visto || 0) > desde);
     const marcas = new Set(novs.map((n) => n.marca));
     const cuenta = new Map();
-    const sumar = (k, m) => { if (!cuenta.has(k)) cuenta.set(k, new Set()); cuenta.get(k).add(m); };
+    const sumar = (k, cat, valor, n) => {
+      if (!cuenta.has(k)) cuenta.set(k, { cat, valor, marcas: new Set(), items: [] });
+      const c = cuenta.get(k);
+      c.marcas.add(n.marca);
+      c.items.push(n);
+    };
     for (const n of novs) {
       const a = n.analisis;
       const color = (a.colores || [])[0];
       const herraje = (a.herrajes || []).find((h) => h !== "sin herrajes");
-      if (color) sumar(`Color ${color}`, n.marca);
-      (a.materiales || []).forEach((x) => sumar(mayus(x), n.marca));
-      if (herraje) sumar(`Herraje ${herraje}`, n.marca);
-      if (a.tipo && a.tipo !== "otro") sumar(mayus(TIPO_PLURAL[a.tipo] || a.tipo), n.marca);
-      if (a.forma && a.forma !== "otra") sumar(`Forma ${a.forma}`, n.marca);
-      if (color && herraje) sumar(`${mayus(color)} con herraje ${herraje}`, n.marca);
+      if (color) sumar(`Color ${color}`, "color", color, n);
+      (a.materiales || []).forEach((x) => sumar(mayus(x), "material", x, n));
+      if (herraje) sumar(`Herraje ${herraje}`, "herraje", herraje, n);
+      if (a.tipo && a.tipo !== "otro") sumar(mayus(TIPO_PLURAL[a.tipo] || a.tipo), "tipo", TIPO_PLURAL[a.tipo] || a.tipo, n);
+      if (a.forma && a.forma !== "otra") sumar(`Forma ${a.forma}`, "forma", a.forma, n);
+      if (color && herraje) sumar(`${mayus(color)} con herraje ${herraje}`, "combinacion", "", n);
     }
     const minimo = marcas.size >= 3 ? 2 : 1;
-    const filas = [...cuenta].map(([k, s]) => [k, s.size]).filter(([, c]) => c >= minimo).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es")).slice(0, 12);
-    return { filas, marcas: marcas.size, novedades: novs.filter((n) => n.fuente !== "nota").length, notas: novs.filter((n) => n.fuente === "nota").length };
+    const filas = [...cuenta].map(([k, c]) => ({ k, cat: c.cat, valor: c.valor, c: c.marcas.size, n: c.items.length, items: c.items }))
+      .filter((f) => f.c >= minimo).sort((a, b) => b.c - a.c || b.n - a.n || a.k.localeCompare(b.k, "es")).slice(0, 12);
+    const nombres = [...marcas].map((id) => S.marcas.find((m) => m.id === id)?.nombre).filter(Boolean);
+    return { filas, marcas: marcas.size, nombres, novedades: novs.filter((n) => !n.fuente).length, desfiles: novs.filter((n) => n.fuente === "pasarela").length, notas: novs.filter((n) => n.fuente === "nota").length };
+  }
+  // La tendencia en una frase: «bandoleras en negro, de cuero liso y con herraje dorado»
+  function fraseTendencia(t) {
+    if (!t?.filas.length) return "";
+    const top = (cat) => t.filas.find((f) => f.cat === cat)?.valor || "";
+    const tipo = top("tipo"), color = top("color"), material = top("material"), herraje = top("herraje");
+    if (!tipo && !color && !material && !herraje) return "";
+    const resto = [material ? `de ${material}` : "", herraje ? `con herraje ${herraje}` : ""].filter(Boolean);
+    const primero = `${tipo || "carteras"}${color ? ` en ${color}` : ""}`;
+    return resto.length ? `${primero}, ${juntar(resto)}` : primero;
   }
   // Las animaciones siguen donde iban aunque la pantalla se vuelva a dibujar (no «saltan»)
   const fase = (ms, extra = 0) => `animation-delay:${(extra - (Date.now() % ms) / 1000).toFixed(2)}s`;
@@ -2067,8 +2093,9 @@ button.inicio-card:hover { border-color: var(--tx); }
     "Podés seguir usando el taller: esto sigue solo.",
     "Las novedades van apareciendo abajo a medida que llegan.",
     "El modelo de visión mira cada foto: tipo, color, material y herrajes.",
-    "Si una web no deja que la lean programas, el radar la saltea y lo avisa.",
+    "Si una web no deja que la lean programas, lo nuevo de esa marca sale de sus desfiles y de las revistas.",
     "También busca a tus marcas en revistas de moda: suman aunque su web no se pueda leer.",
+    "En las marcas grandes mira también las carteras de su último desfile en Vogue Runway.",
   ];
   // Cómo le fue a cada marca en la última actualización
   const MOTIVO = { bloqueado: "no deja que la lean programas", esperar: "pidió que esperemos", sin_productos: "no encontré productos en su web" };
@@ -2089,18 +2116,22 @@ button.inicio-card:hover { border-color: var(--tx); }
       if (recien) {
         const nuevas = Number(est.nuevas) || 0;
         const nn = Number(est.notasNuevas) || 0;
-        const sobre = juntar(Object.keys(est.notasPorMarca || {}).map((id) => esc(ms.find((m) => m.id === id)?.nombre || "")).filter(Boolean));
-        const notas = nn ? `${nn} nota${nn === 1 ? " nueva" : "s nuevas"} en revistas${sobre ? ` sobre ${sobre}` : ""}` : "";
-        const ver = nuevas ? ` <a class="enlace" data-accion="iTab" data-f="tendencias">Ver tendencias</a>` : nn ? ` <a class="enlace" data-accion="verNotas">Ver las notas</a>` : "";
-        if (!r.bien.length && r.mal.length) resumen = notas
-          ? `${r.mal.length === 1 ? "No se pudo leer la web de" : "No se pudieron leer las webs de"} ${r.listaMal}, pero encontré ${notas}.${ver}`
-          : `No se pudo leer ${r.mal.length === 1 ? "la marca" : "ninguna de las marcas"}: ${r.listaMal}. Probá con marcas que vendan online en su propia tienda, por ejemplo en Tienda Nube o Shopify.`;
-        else if (r.bien.length) resumen = (nuevas ? `Listo: ${nuevas} novedades nuevas de ${r.bien.length} marca${r.bien.length === 1 ? "" : "s"}.` : `Listo: ${r.bien.length === 1 ? "la marca no sacó" : `las ${r.bien.length} marcas no sacaron`} nada nuevo desde la última vez.`)
-          + (notas ? ` Además, ${notas}.` : "") + (r.mal.length ? ` No se pudo leer: ${r.listaMal}.` : "") + ver;
-        else if (notas) resumen = `Listo: ${notas}.${ver}`;
+        const np = Number(est.pasarelaNuevas) || 0;
+        const nombres = (porId) => juntar(Object.keys(porId || {}).map((id) => esc(ms.find((m) => m.id === id)?.nombre || "")).filter(Boolean));
+        const partes = [
+          nuevas ? `${nuevas} producto${nuevas === 1 ? " nuevo" : "s nuevos"} de sus tiendas` : "",
+          np ? `${np} cartera${np === 1 ? "" : "s"} ${Object.keys(est.pasarelaPorMarca || {}).length > 1 ? "de los últimos desfiles" : "del último desfile"} de ${nombres(est.pasarelaPorMarca)}` : "",
+          nn ? `${nn} nota${nn === 1 ? " nueva" : "s nuevas"} en revistas sobre ${nombres(est.notasPorMarca)}` : "",
+        ].filter(Boolean);
+        const bloqueadas = r.mal.filter(([, x]) => x.estado === "bloqueado").map(([m]) => esc(m.nombre));
+        const otras = r.mal.filter(([, x]) => x.estado !== "bloqueado");
+        resumen = (partes.length ? `Listo: ${juntar(partes)}.` : "Listo: no hubo nada nuevo desde la última vez.")
+          + (bloqueadas.length ? ` ${juntar(bloqueadas)} no ${bloqueadas.length === 1 ? "deja" : "dejan"} leer su web, así que lo nuevo sale de ${bloqueadas.length === 1 ? "su desfile" : "sus desfiles"} y de las revistas.` : "")
+          + (otras.length ? ` No se pudo leer: ${juntar(otras.map(([m, x]) => `${esc(m.nombre)} (${MOTIVO[x.estado] || "no se pudo leer su web"})`))}.` : "")
+          + (tendencias().filas.length ? ` <a class="enlace" data-accion="iTab" data-f="tendencias">Ver tendencias</a>` : nn ? ` <a class="enlace" data-accion="verNotas">Ver las notas</a>` : "");
       }
       return `<div class="radar-barra">${boton}<span class="estado">${est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}` : "Todavía no se actualizó."}</span>
-        ${resumen ? `<p class="radar-listo">${r.bien.length || Number(est?.notasNuevas) ? ICONO.ok : ICONO.cerrar}<span>${resumen}</span></p>` : ""}
+        ${resumen ? `<p class="radar-listo">${ICONO.ok}<span>${resumen}</span></p>` : ""}
         ${!recien && est?.nota ? `<p class="estado" style="flex-basis:100%">${esc(est.nota)}</p>` : ""}</div>`;
     }
     const cola = est.cola || [];
@@ -2127,7 +2158,7 @@ button.inicio-card:hover { border-color: var(--tx); }
       const deAhora = r && Date.parse(r.cuando || 0) >= empezo;
       if (cola[0] === m.id) return `<span class="rt-marca leyendo" style="${fase(1400)}">${esc(m.nombre)}…</span>`;
       if (cola.includes(m.id) || !deAhora) return `<span class="rt-marca">${esc(m.nombre)}</span>`;
-      if (r.estado === "ok") return `<span class="rt-marca ok">${ICONO.ok}${esc(m.nombre)} · ${r.total}</span>`;
+      if (r.estado === "ok" || r.desfile?.carteras) return `<span class="rt-marca ok">${ICONO.ok}${esc(m.nombre)} · ${(Number(r.total) || 0) + (Number(r.desfile?.nuevas) || 0)}</span>`;
       return `<span class="rt-marca mal" title="${esc(r.nota || "")}">${esc(m.nombre)}</span>`;
     };
     const porAnotar = pendientes[0] ? `Por anotar: «${esc(String(pendientes[0].nombre || "").slice(0, 44).trim())}»${pendientes.length > 1 ? ` y ${pendientes.length - 1} más` : ""}` : "";
@@ -2135,7 +2166,7 @@ button.inicio-card:hover { border-color: var(--tx); }
       <div class="rt-cabeza"><b>El radar está trabajando</b>${PUNTOS()}</div>
       <div class="barrita fija"><i style="width:${Math.max(3, Math.round(avance))}%"></i></div>
       <ul class="rt-pasos">
-        ${paso(cola.length ? "activo" : "hecho", "Leer las webs de las marcas", `${leidas} de ${total}`, cola.length && leyendo ? `Leyendo ${esc(leyendo.nombre)}…` : "")}
+        ${paso(cola.length ? "activo" : "hecho", "Leer las webs y los desfiles de las marcas", `${leidas} de ${total}`, cola.length && leyendo ? `Leyendo ${esc(leyendo.nombre)}…` : "")}
         ${totalR ? paso(enRevistas ? "activo" : anotando ? "hecho" : "espera", "Buscar a tus marcas en revistas", cola.length ? "" : `${leidasR} de ${totalR}`, enRevistas ? `Leyendo ${esc(colaR[0]?.nombre || "las revistas")}…${notasTexto ? ` Van ${notasTexto}.` : ""}` : anotando ? notasTexto : "") : ""}
         ${paso(anotando ? "activo" : "espera", "Mirar las fotos y anotar cada novedad", anotando ? `${anotadas} de ${totalAnotar}` : "", anotando ? porAnotar : "")}
         ${paso("espera", "Armar las tendencias", "")}
@@ -2146,42 +2177,60 @@ button.inicio-card:hover { border-color: var(--tx); }
   }
   function vInspiracion() {
     const ms = [...S.marcas].sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
-    const tab = S.iTab || (S.iTab = ms.length ? "novedades" : "marcas");
+    const tab = S.iTab || (S.iTab = !ms.length ? "marcas" : tendencias().filas.length ? "tendencias" : "novedades");
     const est = estadoRadar();
     const andando = radarAndando(est);
     const pest = (k, n) => `<button data-accion="iTab" data-f="${k}" aria-pressed="${tab === k}">${n}</button>`;
     const cuantas = S.novedades.filter((n) => n.fuente !== "nota").length + new Set(S.novedades.filter((n) => n.fuente === "nota").map((n) => n.link)).size;
     const cabeza = `<div class="cabeza"><h1>Inspiración</h1><p>El radar de las marcas que seguís: qué están sacando y qué se repite entre ellas. Sirve para leer tendencias (colores, materiales, formas), no para copiar modelos.</p></div>
-      <div class="filtros" role="group" aria-label="Qué ver">${pest("novedades", `Novedades · ${cuantas}`)}${pest("tendencias", "Tendencias")}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
+      <div class="filtros" role="group" aria-label="Qué ver">${pest("tendencias", "Tendencias")}${pest("novedades", `Novedades · ${cuantas}`)}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
     const barra = ms.length ? panelRadar(est, ms) : "";
     if (tab === "marcas") {
       const fila = (m) => {
         const r = est?.porMarca?.[m.id];
         const base = !r ? "Todavía sin leer." : r.estado === "ok" ? `${r.total} novedades${r.nuevas && r.primera !== r.cuando ? ` · ${r.nuevas} nuevas` : ""} · leída ${hace(r.cuando)}` : String(r.nota || "");
         const nNotas = new Set(S.novedades.filter((x) => x.marca === m.id && x.fuente === "nota").map((x) => x.link)).size;
-        const nota = nNotas ? `${base.replace(/\.$/, "")} · ${nNotas} nota${nNotas === 1 ? "" : "s"} en revistas` : base;
+        const nDesfile = S.novedades.filter((x) => x.marca === m.id && x.fuente === "pasarela").length;
+        const extras = [nDesfile ? `${nDesfile} cartera${nDesfile === 1 ? "" : "s"} del desfile${r?.desfile?.nombre ? ` ${r.desfile.nombre}` : ""}` : "", nNotas ? `${nNotas} nota${nNotas === 1 ? "" : "s"} en revistas` : ""].filter(Boolean);
+        const nota = extras.length ? `${base.replace(/\.$/, "")} · ${extras.join(" · ")}` : base;
         return `<li><div><b>${esc(m.nombre)}</b>${m.web ? `<small><a href="${esc(m.web)}" target="_blank" rel="noopener noreferrer">${esc(String(m.web).replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a></small>` : ""}<small class="nota">${esc(nota)}</small></div>${escribe() ? `<button class="quitar" data-accion="borrarMarca" data-id="${esc(m.id)}" aria-label="Sacar ${esc(m.nombre)}" title="Sacar">×</button>` : ""}</li>`;
       };
       const form = escribe() ? `<form class="agregar marca-nueva" data-form="marca"><input type="text" name="nombre" required maxlength="60" placeholder="Nombre de la marca" aria-label="Nombre de la marca"><input type="text" name="web" maxlength="200" inputmode="url" autocapitalize="off" placeholder="Su web (ej.: marca.com)" aria-label="Web de la marca"><button class="btn prim" type="submit">Sumar</button></form>` : "";
       return cabeza + barra + (ms.length ? `<ul class="marcas">${ms.map(fila).join("")}</ul>` : `<div class="vacio">Todavía no hay marcas. Sumá la primera: con 10 a 15 alcanza.</div>`) + form
-        + `<p class="estado" style="margin-top:14px">Conviene cargar la web de la tienda (o su página de novedades). El radar respeta lo que cada web permite: si alguna no deja que la lean programas, lo avisa acá. Además busca a cada marca en las notas de revistas de moda (Vogue, Harper's Bazaar, Elle, Fashionista, La Nación e Infobae), así suma aunque su web no se pueda leer.</p>`;
+        + `<p class="estado" style="margin-top:14px">Conviene cargar la web de la tienda (o su página de novedades). El radar respeta lo que cada web permite: si alguna no deja que la lean programas, lo avisa acá. Además busca a cada marca en las notas de revistas de moda (Vogue, Harper's Bazaar, Elle, Fashionista, La Nación e Infobae) y en su último desfile en Vogue Runway, así suma aunque su web no se pueda leer.</p>`;
     }
     if (!ms.length) return cabeza + `<div class="vacio">Primero sumá las marcas que seguís, en «Marcas».</div>`;
     if (tab === "tendencias") {
       const t = tendencias();
       const soloNotas = S.novedades.length > 0 && S.novedades.every((n) => n.fuente === "nota");
-      if (!t.filas.length) return cabeza + barra + `<div class="vacio">${soloNotas ? "Las tendencias salen de los productos de las marcas y de las notas de revistas que muestran carteras. Por ahora solo hay notas sin carteras: sumá marcas cuya web se pueda leer (por ejemplo, las que venden en Tienda Nube o Shopify)." : S.novedades.length ? "Todavía no hay suficientes novedades anotadas. Se completan solas en las próximas actualizaciones." : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`;
-      const max = Math.max(...t.filas.map(([, c]) => c));
-      return cabeza + barra + `<div class="tendencias">${t.filas.map(([k, c]) => `<div class="tendencia"><div><b style="font-weight:400">${esc(k)}</b><span>${c} de ${t.marcas} marca${t.marcas === 1 ? "" : "s"}</span></div><div class="barrita fija"><i style="width:${Math.round(100 * c / max)}%"></i></div></div>`).join("")}</div>
-        <p class="estado" style="margin-top:14px">Sale de ${[t.novedades ? `${t.novedades} novedad${t.novedades === 1 ? "" : "es"} de las marcas` : "", t.notas ? `${t.notas} nota${t.notas === 1 ? "" : "s"} de revistas` : ""].filter(Boolean).join(" y ")} de los últimos 60 días.${t.marcas < 3 ? " Con más marcas, las tendencias se leen mejor." : ""}</p>`;
+      if (!t.filas.length) return cabeza + barra + `<div class="vacio">${soloNotas ? "Las tendencias salen de los productos de las marcas, de las carteras de sus desfiles y de las notas de revistas que muestran carteras. Por ahora solo hay notas sin carteras: tocá «Actualizar información» para traer las carteras de sus desfiles." : S.novedades.length ? "Todavía no hay suficientes novedades anotadas. Se completan solas en las próximas actualizaciones." : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`;
+      const max = Math.max(...t.filas.map((f) => f.c));
+      // Hasta 6 fotos por tendencia, primero una de cada marca
+      const fotos = (f) => {
+        const porMarca = new Map();
+        for (const n of f.items) if (n.foto) { if (!porMarca.has(n.marca)) porMarca.set(n.marca, []); porMarca.get(n.marca).push(n); }
+        const elegidas = [];
+        for (let i = 0; elegidas.length < 6; i++) {
+          const fila = [...porMarca.values()].map((xs) => xs[i]).filter(Boolean);
+          if (!fila.length) break;
+          elegidas.push(...fila);
+        }
+        return elegidas.slice(0, 6).map((n) => `<a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" title="${esc(`${n.marcaNombre || ""} · ${n.nombre || ""}`)}"><img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.remove()"><small>${esc(n.marcaNombre || "")}</small></a>`).join("");
+      };
+      const frase = fraseTendencia(t);
+      return cabeza + barra + (frase ? `<div class="tend-resumen"><span class="etiqueta">Para inspirar</span><p>Lo que más se repite${t.nombres.length ? ` en ${esc(juntar(t.nombres))}` : ""}: ${esc(frase)}.</p></div>` : "")
+        + `<div class="tendencias">${t.filas.map((f) => `<div class="tendencia"><div><b style="font-weight:400">${esc(f.k)}</b><span>${f.c} de ${t.marcas} marca${t.marcas === 1 ? "" : "s"} · ${f.n} foto${f.n === 1 ? "" : "s"}</span></div><div class="barrita fija"><i style="width:${Math.round(100 * f.c / max)}%"></i></div><div class="tend-fotos">${fotos(f)}</div></div>`).join("")}</div>
+        <p class="estado" style="margin-top:14px">Sale de ${juntar([t.novedades ? `${t.novedades} producto${t.novedades === 1 ? "" : "s"} de sus tiendas` : "", t.desfiles ? `${t.desfiles} foto${t.desfiles === 1 ? "" : "s"} de desfiles` : "", t.notas ? `${t.notas} nota${t.notas === 1 ? "" : "s"} de revistas` : ""].filter(Boolean))} de los últimos 60 días.${t.marcas < 3 ? " Con más marcas, las tendencias se leen mejor." : ""}</p>`;
     }
     const conNovedades = ms.filter((m) => S.novedades.some((n) => n.marca === m.id));
     const notasTodas = S.novedades.filter((n) => n.fuente === "nota");
-    const hayDeLasDos = notasTodas.length > 0 && notasTodas.length < S.novedades.length;
-    if (S.iMarca === "@notas" ? !notasTodas.length : S.iMarca && !conNovedades.some((m) => m.id === S.iMarca)) S.iMarca = "";
+    const deDesfiles = S.novedades.filter((n) => n.fuente === "pasarela");
+    const tipos = [S.novedades.some((n) => !n.fuente), deDesfiles.length > 0, notasTodas.length > 0].filter(Boolean).length;
+    const SOLO = { "@notas": (n) => n.fuente === "nota", "@desfiles": (n) => n.fuente === "pasarela" };
+    if (SOLO[S.iMarca] ? !S.novedades.some(SOLO[S.iMarca]) : S.iMarca && !conNovedades.some((m) => m.id === S.iMarca)) S.iMarca = "";
     const opcion = (v, texto) => `<option value="${esc(v)}" ${S.iMarca === v ? "selected" : ""}>${texto}</option>`;
-    const filtro = conNovedades.length > 1 || hayDeLasDos ? `<select class="filtro-marcas" data-accion="iMarca" aria-label="Qué novedades ver">${opcion("", "Todas las marcas")}${hayDeLasDos ? opcion("@notas", `Solo notas de revistas · ${new Set(notasTodas.map((n) => n.link)).size}`) : ""}${conNovedades.map((m) => opcion(m.id, `${esc(m.nombre)} · ${S.novedades.filter((n) => n.marca === m.id).length}`)).join("")}</select>` : "";
-    const elegidas = S.novedades.filter((n) => !S.iMarca || (S.iMarca === "@notas" ? n.fuente === "nota" : n.marca === S.iMarca))
+    const filtro = conNovedades.length > 1 || tipos > 1 ? `<select class="filtro-marcas" data-accion="iMarca" aria-label="Qué novedades ver">${opcion("", "Todas las marcas")}${tipos > 1 && deDesfiles.length ? opcion("@desfiles", `Solo desfiles · ${deDesfiles.length}`) : ""}${tipos > 1 && notasTodas.length ? opcion("@notas", `Solo notas de revistas · ${new Set(notasTodas.map((n) => n.link)).size}`) : ""}${conNovedades.map((m) => opcion(m.id, `${esc(m.nombre)} · ${S.novedades.filter((n) => n.marca === m.id).length}`)).join("")}</select>` : "";
+    const elegidas = S.novedades.filter((n) => !S.iMarca || (SOLO[S.iMarca] ? SOLO[S.iMarca](n) : n.marca === S.iMarca))
       .sort((a, b) => String(b.visto || "").localeCompare(String(a.visto || "")) || String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
     // Una nota que nombra a varias marcas se muestra una sola vez, con todas
     const porLink = new Map();
@@ -2199,21 +2248,20 @@ button.inicio-card:hover { border-color: var(--tx); }
     const tarjeta = (n) => {
       const aparece = !inicial && !S.radarVistas.has(n.id);
       S.radarVistas.add(n.id);
-      const nota = n.fuente === "nota";
+      const nota = n.fuente === "nota", desfile = n.fuente === "pasarela";
       const a = n.analisis || {};
       const notas = [a.tipo && a.tipo !== "otro" ? a.tipo : "", (a.colores || [])[0] || "", (a.materiales || [])[0] || ""].filter(Boolean).join(" · ");
-      const sello = nota ? `<span class="sello-nota">Nota</span>` : nueva(n) ? `<span class="sello-nuevo">Nuevo</span>` : "";
-      const debajo = nota ? `${n.medio || "Revista"}${n.fecha ? ` · ${fecha(n.fecha)}` : ""}` : precioTexto(n);
-      return `<a class="nove${nota ? " nota" : ""}${aparece ? " aparece" : ""}" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+      const sello = nota ? `<span class="sello-nota">Nota</span>` : desfile ? `<span class="sello-nota">Desfile</span>` : nueva(n) ? `<span class="sello-nuevo">Nuevo</span>` : "";
+      const debajo = nota || desfile ? `${n.medio || "Revista"}${n.fecha ? ` · ${fecha(n.fecha)}` : ""}` : precioTexto(n);
+      return `<a class="nove${nota ? " nota" : desfile ? " pasarela" : ""}${aparece ? " aparece" : ""}" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
         <span class="nove-foto">${n.foto ? `<img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}${sello}</span>
         <span class="etiqueta">${esc((n.marcasNota || [n.marcaNombre]).filter(Boolean).join(" · "))}</span><b>${esc(n.nombre)}</b>
-        ${debajo ? `<small>${esc(debajo)}</small>` : ""}${!n.analisis ? `<small class="anotando" style="${fase(1400)}" aria-label="Anotando"></small>` : notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
+        ${debajo ? `<small>${esc(debajo)}</small>` : ""}${!n.analisis ? (andando ? `<small class="anotando" style="${fase(1400)}" aria-label="Anotando"></small>` : "") : notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
     };
     const sinNovedades = () => {
       if (andando) return "Leyendo las webs de las marcas…";
       if (!est?.terminado) return "Tocá «Actualizar información» para traer las novedades de las marcas.";
       const r = resultadoRadar(est, ms);
-      if (r.mal.length && !r.bien.length) return `Todavía no hay novedades: no se pudo leer ${r.listaMal}. Sumá marcas que vendan online en su propia tienda (por ejemplo en Tienda Nube o Shopify) y volvé a actualizar.`;
       return "Todavía no hay novedades. Volvé a actualizar más adelante.";
     };
     return cabeza + barra + filtro + (novs.length ? `<div class="novedades">${novs.map(tarjeta).join("")}</div>` : `<div class="vacio">${sinNovedades()}</div>`);
