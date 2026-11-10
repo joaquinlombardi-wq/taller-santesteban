@@ -350,17 +350,67 @@ body.con-acceso .app { visibility: hidden; }
 // Imita la forma de trabajar del taller en Claude (window.claude.use), así la página es la misma en los dos lugares.
 (() => {
   const C = window.TALLER_CONFIG || {};
-  // La sesión queda guardada en el navegador (así no hay que volver a entrar) y, por las dudas, también en la
-  // memoria de la página: algunos Chrome la borraban apenas se guardaba y el taller no llegaba a abrir.
+  // La sesión se guarda en tres lugares, para no tener que volver a entrar: la memoria del navegador (localStorage),
+  // una cookie del sitio y la memoria de la página. Algunos Chrome borran la primera al recargar; con la cookie
+  // la sesión sigue. Si el navegador bloquea las dos, la pantalla de entrada lo avisa.
+  const CLAVE_SESION = "sb-" + new URL(C.url || "https://x.invalid").hostname.split(".")[0] + "-auth-token";
+  const RUTA = location.pathname.replace(/[^/]*$/, "") || "/";
   const memoriaSesion = new Map();
+  const cookie = {
+    leer(n) {
+      const todas = Object.fromEntries(document.cookie.split("; ").filter(Boolean).map((c) => { const i = c.indexOf("="); return [c.slice(0, i), c.slice(i + 1)]; }));
+      const partes = Number(todas[n + ".n"] || 0);
+      if (!partes) return null;
+      let v = "";
+      for (let i = 0; i < partes; i++) { if (todas[`${n}.${i}`] === undefined) return null; v += todas[`${n}.${i}`]; }
+      try { return decodeURIComponent(v); } catch (_) { return null; }
+    },
+    poner(n, valor, dias = 60) {
+      const cod = encodeURIComponent(valor);
+      const trozos = cod.match(/.{1,3000}/g) || [""];
+      const fin = `; path=${RUTA}; max-age=${dias * 86400}; SameSite=Lax; Secure`;
+      const antes = Number(this.partes(n));
+      trozos.forEach((t, i) => { document.cookie = `${n}.${i}=${t}${fin}`; });
+      for (let i = trozos.length; i < antes; i++) document.cookie = `${n}.${i}=; path=${RUTA}; max-age=0`;
+      document.cookie = `${n}.n=${trozos.length}${fin}`;
+    },
+    partes(n) { const m = document.cookie.match(new RegExp(`(?:^|; )${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.n=(\\d+)`)); return m ? m[1] : 0; },
+    borrar(n) {
+      const antes = Number(this.partes(n));
+      for (let i = 0; i < antes; i++) document.cookie = `${n}.${i}=; path=${RUTA}; max-age=0`;
+      document.cookie = `${n}.n=; path=${RUTA}; max-age=0`;
+    },
+  };
   const almacen = {
     getItem(k) {
       try { const v = localStorage.getItem(k); if (v !== null) return v; } catch (_) { /* sin memoria del navegador */ }
+      if (k === CLAVE_SESION) { try { const v = cookie.leer(k); if (v !== null) return v; } catch (_) { /* sin cookies */ } }
       return memoriaSesion.has(k) ? memoriaSesion.get(k) : null;
     },
-    setItem(k, v) { memoriaSesion.set(k, v); try { localStorage.setItem(k, v); } catch (_) { /* queda en memoria */ } },
-    removeItem(k) { memoriaSesion.delete(k); try { localStorage.removeItem(k); } catch (_) { /* nada */ } },
+    setItem(k, v) {
+      memoriaSesion.set(k, v);
+      try { localStorage.setItem(k, v); } catch (_) { /* queda en la cookie o en memoria */ }
+      if (k === CLAVE_SESION) { try { cookie.poner(k, v); } catch (_) { /* queda en memoria */ } }
+    },
+    removeItem(k) {
+      memoriaSesion.delete(k);
+      try { localStorage.removeItem(k); } catch (_) { /* nada */ }
+      if (k === CLAVE_SESION) { try { cookie.borrar(k); } catch (_) { /* nada */ } }
+    },
   };
+  // ¿Este navegador deja guardar la sesión? (se informa en la pantalla de entrada y al servidor, sin datos personales)
+  function revisarAlmacen() {
+    const d = { ls: "ok", cookies: "ok", sesionLs: false, sesionCookie: false, visitaAnterior: null };
+    try { localStorage.setItem("taller-prueba", "1"); if (localStorage.getItem("taller-prueba") !== "1") d.ls = "no-guarda"; localStorage.removeItem("taller-prueba"); }
+    catch (e) { d.ls = "bloqueado:" + (e?.name || "error"); }
+    try { document.cookie = `taller-prueba=1; path=${RUTA}; max-age=60; SameSite=Lax; Secure`; if (!/(?:^|; )taller-prueba=1/.test(document.cookie)) d.cookies = "no-guarda"; }
+    catch (e) { d.cookies = "bloqueado:" + (e?.name || "error"); }
+    try { d.sesionLs = !!localStorage.getItem(CLAVE_SESION); } catch (_) { /* nada */ }
+    try { d.sesionCookie = cookie.leer(CLAVE_SESION) !== null; } catch (_) { /* nada */ }
+    try { d.visitaAnterior = localStorage.getItem("taller-visita"); localStorage.setItem("taller-visita", new Date().toISOString()); } catch (_) { /* nada */ }
+    return d;
+  }
+  const ALMACEN = revisarAlmacen();
   const sb = window.supabase.createClient(C.url, C.clave, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: almacen },
   });
@@ -696,7 +746,11 @@ body.con-acceso .app { visibility: hidden; }
       <p class="acceso-ayuda oculto" id="primeraVez">Es la primera vez que se usa el taller: <a href="#" data-acceso-ir="primer">crear la cuenta de administración</a>.</p>
     </form>`);
     // Si todavía no hay ninguna cuenta, lo único que se puede hacer es crear la primera: vamos directo ahí.
-    funcion("estado").then((r) => {
+    // Si el navegador no deja guardar nada, la sesión se pierde al recargar: lo avisamos
+    if (!ALMACEN.ls.startsWith("ok") && !ALMACEN.cookies.startsWith("ok")) {
+      a.querySelector(".acceso-form")?.insertAdjacentHTML("beforeend", `<p class="acceso-ayuda">Ojo: este navegador no deja que el taller guarde tu sesión, por eso te pide entrar cada vez. En Chrome: Configuración → Privacidad y seguridad → Cookies de terceros y datos de sitios → permití que los sitios guarden datos (o agregá ${esc(location.hostname)}).</p>`);
+    }
+    funcion("estado", { diag: { ...ALMACEN, ua: navigator.userAgent.slice(0, 160) } }).then((r) => {
       if (!r || r.hayMiembros || !a.querySelector("form[data-acceso='mail']")) return;
       pantallaPrimer(a.querySelector("input[name=email]")?.value || email, true);
     }).catch(() => {});
