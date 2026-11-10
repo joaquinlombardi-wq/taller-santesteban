@@ -350,8 +350,19 @@ body.con-acceso .app { visibility: hidden; }
 // Imita la forma de trabajar del taller en Claude (window.claude.use), así la página es la misma en los dos lugares.
 (() => {
   const C = window.TALLER_CONFIG || {};
+  // La sesión queda guardada en el navegador (así no hay que volver a entrar) y, por las dudas, también en la
+  // memoria de la página: algunos Chrome la borraban apenas se guardaba y el taller no llegaba a abrir.
+  const memoriaSesion = new Map();
+  const almacen = {
+    getItem(k) {
+      try { const v = localStorage.getItem(k); if (v !== null) return v; } catch (_) { /* sin memoria del navegador */ }
+      return memoriaSesion.has(k) ? memoriaSesion.get(k) : null;
+    },
+    setItem(k, v) { memoriaSesion.set(k, v); try { localStorage.setItem(k, v); } catch (_) { /* queda en memoria */ } },
+    removeItem(k) { memoriaSesion.delete(k); try { localStorage.removeItem(k); } catch (_) { /* nada */ } },
+  };
   const sb = window.supabase.createClient(C.url, C.clave, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: almacen },
   });
   const COLECCIONES = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas"];
   const W = { sesion: null, yo: null, miembros: [], datos: new Map(), oyentes: new Map(), alCambiar: new Set(), suscripto: false };
@@ -678,10 +689,10 @@ body.con-acceso .app { visibility: hidden; }
   function pantallaEntrar(aviso = "", email = "") {
     const a = pantalla(`<form class="acceso-form" data-acceso="mail" novalidate>
       <h1>Entrar</h1>
-      <p>${aviso ? esc(aviso) : "Escribí tu mail y te mandamos un código para entrar."}</p>
+      <p>${aviso ? esc(aviso) : "Escribí tu mail y te mandamos un acceso directo: un mail con un botón para entrar."}</p>
       <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" value="${esc(email)}" required></label>
       <p class="acceso-error" role="alert"></p>
-      <button class="btn prim" type="submit">Mandarme el código</button>
+      <button class="btn prim" type="submit">Mandarme el acceso</button>
       <p class="acceso-ayuda oculto" id="primeraVez">Es la primera vez que se usa el taller: <a href="#" data-acceso-ir="primer">crear la cuenta de administración</a>.</p>
     </form>`);
     // Si todavía no hay ninguna cuenta, lo único que se puede hacer es crear la primera: vamos directo ahí.
@@ -693,11 +704,11 @@ body.con-acceso .app { visibility: hidden; }
   function pantallaPrimer(email = "", primeraVez = false) {
     pantalla(`<form class="acceso-form" data-acceso="primer" novalidate>
       <h1>Cuenta de administración</h1>
-      <p>${primeraVez ? "Todavía no hay ninguna cuenta en el taller: empezá por la tuya. " : ""}Es la cuenta de quien maneja el taller: puede sumar personas y quitar accesos. Para entrar te mandamos un código a este mail.</p>
+      <p>${primeraVez ? "Todavía no hay ninguna cuenta en el taller: empezá por la tuya. " : ""}Es la cuenta de quien maneja el taller: puede sumar personas y quitar accesos. Para entrar te mandamos un mail con un botón de acceso.</p>
       <label>Nombre<input type="text" name="nombre" maxlength="80" autocomplete="name" required></label>
       <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" value="${esc(email)}" required></label>
       <p class="acceso-error" role="alert"></p>
-      <button class="btn prim" type="submit">Crear y mandarme el código</button>
+      <button class="btn prim" type="submit">Crear y mandarme el acceso</button>
       ${primeraVez ? "" : `<p class="acceso-ayuda"><a href="#" data-acceso-ir="entrar">Volver</a></p>`}
     </form>`);
   }
@@ -705,11 +716,12 @@ body.con-acceso .app { visibility: hidden; }
   function pantallaCodigo(email) {
     const a = pantalla(`<form class="acceso-form" data-acceso="codigo" data-email="${esc(email)}" novalidate>
       <h1>Revisá tu mail</h1>
-      <p>Te mandamos un código de ${LARGO} números a <b>${esc(email)}</b>. Puede tardar un minuto; si no aparece, mirá en correo no deseado.</p>
+      <p>Te mandamos un mail a <b>${esc(email)}</b>. Tocá <b>Entrar al taller</b> en ese mail y listo. Puede tardar un minuto; si no aparece, mirá en correo no deseado.</p>
+      <p>Si lo abrís en otro aparato, escribí acá el código de ${LARGO} números que viene en el mismo mail.</p>
       <label>Código<input type="text" name="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="${LARGO}" required class="codigo"></label>
       <p class="acceso-error" role="alert"></p>
       <button class="btn prim" type="submit">Entrar</button>
-      <p class="acceso-ayuda"><a href="#" data-acceso-ir="reenviar" id="reenviar">Mandarme otro código</a> · <a href="#" data-acceso-ir="entrar">Usar otro mail</a></p>
+      <p class="acceso-ayuda"><a href="#" data-acceso-ir="reenviar" id="reenviar">Mandarme otro mail</a> · <a href="#" data-acceso-ir="entrar">Usar otro mail</a></p>
     </form>`);
     const campo = a.querySelector("input[name=codigo]");
     campo.addEventListener("input", () => {
@@ -721,7 +733,7 @@ body.con-acceso .app { visibility: hidden; }
     let falta = 60;
     clearInterval(espera);
     const tic = () => {
-      link.textContent = falta > 0 ? `Mandarme otro código (en ${falta} s)` : "Mandarme otro código";
+      link.textContent = falta > 0 ? `Mandarme otro mail (en ${falta} s)` : "Mandarme otro mail";
       link.classList.toggle("apagado", falta > 0);
       if (falta-- <= 0) clearInterval(espera);
     };
@@ -751,9 +763,9 @@ body.con-acceso .app { visibility: hidden; }
     if (!error) return "";
     const m = `${error.code || ""} ${error.message || ""}`;
     if (/otp_disabled|signups? not allowed|not found|user_not_found/i.test(m)) return "Ese mail no tiene acceso al taller. Pedile a quien lo administra que te sume.";
-    if (/rate|security purposes|seconds|too many/i.test(m)) return "Ya te mandamos un código hace poco: esperá un minuto y probá de nuevo.";
+    if (/rate|security purposes|seconds|too many/i.test(m)) return "Ya te mandamos un mail hace poco: esperá un minuto y probá de nuevo.";
     if (/banned/i.test(m)) return "Esta cuenta no tiene acceso al taller.";
-    return "No se pudo mandar el código; probá de nuevo en un rato.";
+    return "No se pudo mandar el mail; probá de nuevo en un rato.";
   }
 
   // Abre el taller con la sesión ya iniciada. Una sola vez a la vez, y con reintentos por si la red falla.
@@ -768,9 +780,13 @@ body.con-acceso .app { visibility: hidden; }
     for (let intento = 0; intento < 3; intento++) {
       try {
         // Primero me aseguro de que la sesión quedó guardada: si se piden datos antes, la base los niega.
-        const { data } = await sb.auth.getSession();
-        W.sesion = data?.session || sesion;
-        if (!W.sesion) { pantallaEntrar(); return; }
+        let { data } = await sb.auth.getSession();
+        if (!data?.session && sesion?.access_token && sesion?.refresh_token) {
+          await sb.auth.setSession({ access_token: sesion.access_token, refresh_token: sesion.refresh_token });
+          ({ data } = await sb.auth.getSession());
+        }
+        W.sesion = data?.session || null;
+        if (!W.sesion) { pantallaEntrar("Tu sesión no quedó guardada en este navegador. Pedí el acceso de nuevo."); return; }
         await cargarMiembros();
         if (!W.yo) { pantallaSinAcceso(W.sesion.user?.email); return; }
         suscribir();
@@ -857,8 +873,11 @@ body.con-acceso .app { visibility: hidden; }
 
   // Si se cierra la sesión (desde Salir o porque se quitó el acceso), vuelve a la entrada.
   // Si alguien llega con el link del mail en vez del código, "arrancar" ya toma esa sesión.
-  sb.auth.onAuthStateChange((evento) => {
+  sb.auth.onAuthStateChange((evento, sesion) => {
     if (evento === "SIGNED_OUT" && W.yo) location.replace(direccion());
+    if (evento === "SIGNED_IN" && sesion && !W.yo && !entrando && document.querySelector("form[data-acceso='codigo']")) {
+      setTimeout(() => continuar(sesion), 300);
+    }
   });
 
   async function arrancar() {
