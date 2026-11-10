@@ -481,6 +481,38 @@ button.inicio-card:hover { border-color: var(--tx); }
 .tendencia .barrita { margin: 0; }
 .marcas small.nota { display: block; }
 @media (max-width: 600px) { .novedades { grid-template-columns: 1fr 1fr; gap: 20px 12px; } }
+
+/* Radar trabajando: un cartel vivo con lo que está haciendo */
+.radar-trabajando { border: 1px solid var(--tx); padding: 16px 16px 14px; margin: 0 0 22px; display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
+.rt-cabeza { display: flex; align-items: center; gap: 10px; }
+.rt-cabeza b { font-weight: 400; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+.rt-puntos { display: inline-flex; gap: 4px; vertical-align: middle; }
+.rt-puntos i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: rtPunto 1.2s ease-in-out infinite; }
+@keyframes rtPunto { 0%, 80%, 100% { opacity: .15; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.rt-pasos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.rt-pasos li { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: 13.5px; }
+.rt-pasos li > small { color: var(--mu); font-size: 12px; white-space: nowrap; }
+.rt-pasos .icono { width: 14px; height: 14px; border: 1px solid var(--li); border-radius: 50%; display: grid; place-items: center; }
+.rt-pasos .icono svg { width: 9px; height: 9px; fill: none; stroke: var(--bg); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.rt-pasos .hecho .icono { background: var(--tx); border-color: var(--tx); }
+.rt-pasos .activo .icono { border-color: var(--tx); border-top-color: transparent; animation: rtGira .9s linear infinite; }
+.rt-pasos .espera { color: var(--mu); }
+@keyframes rtGira { to { transform: rotate(360deg); } }
+.rt-detalle { grid-column: 2 / -1; color: var(--mu); font-size: 12px; }
+.rt-marcas { display: flex; flex-wrap: wrap; gap: 6px; }
+.rt-marca { font-size: 11.5px; padding: 5px 9px; border: 1px solid var(--li); color: var(--mu); display: inline-flex; gap: 6px; align-items: center; }
+.rt-marca svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.rt-marca.ok { color: var(--tx); border-color: var(--tx); }
+.rt-marca.leyendo { color: var(--tx); border-color: var(--tx); background: linear-gradient(90deg, transparent 0%, var(--li) 50%, transparent 100%); background-size: 200% 100%; animation: rtBrillo 1.4s linear infinite; }
+.rt-marca.mal { text-decoration: line-through; }
+@keyframes rtBrillo { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.rt-consejo { font-size: 12px; color: var(--mu); margin: 0; }
+.radar-listo { flex-basis: 100%; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.radar-listo svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.nove.aparece { animation: aparece .55s ease both; }
+@keyframes aparece { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.anotando { display: block; width: 72%; height: 10px; margin-top: 4px; background: linear-gradient(90deg, var(--li) 0%, var(--suave) 50%, var(--li) 100%); background-size: 200% 100%; animation: rtBrillo 1.4s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .rt-puntos i, .rt-pasos .activo .icono, .rt-marca.leyendo, .nove.aparece, .anotando { animation: none; } }
 </style>
 </head>
 <body>
@@ -1283,7 +1315,7 @@ button.inicio-card:hover { border-color: var(--tx); }
   };
   const S = {
     proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [], fichas: [], marcas: [], novedades: [], radar: [],
-    revision: null, iTab: null, iMarca: "", fichaSel: null, fichaSucia: false,
+    revision: null, iTab: null, iMarca: "", fichaSel: null, fichaSucia: false, radarVistas: new Set(), forzar: false, vistaPendiente: false,
     listos: new Set(), tab: "inicio", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
     db: null, assets: null, user: null, sample: null, downloads: null, yo: "", puede: null, nombres: {}, cargaFallo: false
   };
@@ -1399,9 +1431,20 @@ button.inicio-card:hover { border-color: var(--tx); }
     if (S.listos.size < COLS.length) { vista.innerHTML = `<div class="aviso">Cargando el taller…</div>`; return; }
     // Mientras se edita una ficha técnica, no se repinta (para no perder lo que se está escribiendo)
     if (S.tab === "ficha" && S.fichaSucia && $("#vista .ficha-tecnica")) { resolverNombres(); return; }
+    // Si alguien está escribiendo en un formulario, lo que llega de fondo espera (lo que toca la persona, no)
+    if (!S.forzar && vistaOcupada()) { S.vistaPendiente = true; resolverNombres(); return; }
+    S.forzar = false;
+    S.vistaPendiente = false;
     const vistas = { inicio: vInicio, inspiracion: vInspiracion, produccion: vProduccion, ventas: vVentas, ficha: vFicha, historial: vHistorial, cerebro: vCerebro, pedidos: vPedidos, equipo: vEquipo };
     vista.innerHTML = (vistas[S.tab] || vTaller)();
     resolverNombres();
+  }
+
+  function vistaOcupada() {
+    const v = $("#vista");
+    const ae = document.activeElement;
+    if (ae && v.contains(ae) && ae.closest("form") && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && !["checkbox", "radio", "submit", "button"].includes(ae.type)) return true;
+    return [...v.querySelectorAll("form input[type='text'], form input[type='email'], form textarea")].some((i) => i.value.trim());
   }
 
   function dibujarModelos() {
@@ -1810,8 +1853,8 @@ button.inicio-card:hover { border-color: var(--tx); }
     const est = estadoRadar();
     const semana = S.novedades.filter((n) => Date.parse(n.visto || 0) > Date.now() - 7 * DIA).length;
     const inspiracion = `<button class="inicio-card fila-card" data-tab="inspiracion"><span><span class="etiqueta">Inspiración</span>
-        <b>${!nm ? "Sumá las marcas que seguís" : S.novedades.length ? `${semana || S.novedades.length} novedades ${semana ? "esta semana" : "en el radar"} · ${nm} marca${nm === 1 ? "" : "s"}` : `${nm} marca${nm === 1 ? "" : "s"} en el radar`}</b>
-        <small>${!nm ? "Para ver qué están sacando y qué se repite." : radarAndando(est) ? "Se está actualizando ahora." : est?.terminado ? `Actualizado ${hace(est.terminado)}.` : "Tocá «Actualizar información» para traer sus novedades."}</small></span>${FLECHA}</button>`;
+        <b>${radarAndando(est) ? `El radar está trabajando ${PUNTOS()}` : !nm ? "Sumá las marcas que seguís" : S.novedades.length ? `${semana || S.novedades.length} novedades ${semana ? "esta semana" : "en el radar"} · ${nm} marca${nm === 1 ? "" : "s"}` : `${nm} marca${nm === 1 ? "" : "s"} en el radar`}</b>
+        <small>${!nm ? "Para ver qué están sacando y qué se repite." : radarAndando(est) ? ((est.cola || []).length ? `Leyendo ${esc(S.marcas.find((m) => m.id === est.cola[0])?.nombre || "las webs")}…` : "Mirando las fotos y anotando cada novedad…") : est?.terminado ? `Actualizado ${hace(est.terminado)}.` : "Tocá «Actualizar información» para traer sus novedades."}</small></span>${FLECHA}</button>`;
     const fichas = fb.length ? `<button class="inicio-card fila-card" data-tab="produccion"><span><span class="etiqueta">Fichas por completar · ${fb.length}</span>
         <b>${esc(juntar(fb.slice(0, 3).map((f) => f.nombre)))}${fb.length > 3 ? ` y ${fb.length - 3} más` : ""}</b>
         <small>Revisá medidas, materiales y herrajes antes de mandarlas.</small></span>${FLECHA}</button>` : "";
@@ -1992,6 +2035,59 @@ button.inicio-card:hover { border-color: var(--tx); }
     const filas = [...cuenta].map(([k, s]) => [k, s.size]).filter(([, c]) => c >= minimo).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "es")).slice(0, 12);
     return { filas, marcas: marcas.size, novedades: novs.length };
   }
+  // Las animaciones siguen donde iban aunque la pantalla se vuelva a dibujar (no «saltan»)
+  const fase = (ms, extra = 0) => `animation-delay:${(extra - (Date.now() % ms) / 1000).toFixed(2)}s`;
+  const PUNTOS = () => `<span class="rt-puntos" aria-hidden="true">${[0, 1, 2].map((i) => `<i style="${fase(1200, i * 0.2)}"></i>`).join("")}</span>`;
+  const CONSEJOS = [
+    "Podés seguir usando el taller: esto sigue solo.",
+    "Las novedades van apareciendo abajo a medida que llegan.",
+    "El modelo de visión mira cada foto: tipo, color, material y herrajes.",
+    "Si una web no deja que la lean programas, el radar la saltea y lo avisa.",
+  ];
+  function panelRadar(est, ms) {
+    const andando = radarAndando(est);
+    const boton = escribe() && window.tallerWeb ? `<button class="btn" data-accion="actualizarRadar" ${andando ? "disabled" : ""}>${ICONO_ACT}${andando ? "Actualizando…" : "Actualizar información"}</button>` : "";
+    if (!andando) {
+      const recien = est?.estado === "listo" && Date.now() - Date.parse(est.terminado || 0) < 3 * 60e3;
+      const n = Number(est?.total) || ms.length;
+      return `<div class="radar-barra">${boton}<span class="estado">${est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}` : "Todavía no se actualizó."}</span>
+        ${recien ? `<p class="radar-listo">${ICONO.ok}<span>Listo: ${est.nuevas ? `${est.nuevas} novedades nuevas` : "no hubo novedades nuevas"} de ${n} marca${n === 1 ? "" : "s"}.${est.nuevas ? ` <a class="enlace" data-accion="iTab" data-f="tendencias">Ver tendencias</a>` : ""}</span></p>` : ""}
+        ${!recien && est?.nota ? `<p class="estado" style="flex-basis:100%">${esc(est.nota)}</p>` : ""}</div>`;
+    }
+    const cola = est.cola || [];
+    const total = Number(est.total) || ms.length || 1;
+    const leidas = Math.max(0, total - cola.length);
+    const empezo = Date.parse(est.empezado || 0) - 2000;
+    const deEsta = S.novedades.filter((x) => Date.parse(x.visto || 0) >= empezo);
+    const pendientes = S.novedades.filter((x) => !x.analisis);
+    const leyendo = cola.length ? S.marcas.find((m) => m.id === cola[0]) : null;
+    const anotando = !cola.length;
+    const totalAnotar = Math.max(deEsta.length, pendientes.length, 1);
+    const anotadas = Math.max(0, totalAnotar - pendientes.length);
+    const avance = anotando ? 50 + (50 * anotadas) / totalAnotar : (50 * leidas) / total;
+    const icono = (estado) => `<span class="icono" ${estado === "activo" ? `style="${fase(900)}"` : ""}>${estado === "hecho" ? ICONO.ok : ""}</span>`;
+    const paso = (estado, texto, cuenta, detalle = "") => `<li class="${estado}">${icono(estado)}<span>${texto}</span><small>${cuenta}</small>${detalle ? `<span class="rt-detalle">${detalle}</span>` : ""}</li>`;
+    const chip = (m) => {
+      const r = est.porMarca?.[m.id];
+      const deAhora = r && Date.parse(r.cuando || 0) >= empezo;
+      if (cola[0] === m.id) return `<span class="rt-marca leyendo" style="${fase(1400)}">${esc(m.nombre)}…</span>`;
+      if (cola.includes(m.id) || !deAhora) return `<span class="rt-marca">${esc(m.nombre)}</span>`;
+      if (r.estado === "ok") return `<span class="rt-marca ok">${ICONO.ok}${esc(m.nombre)} · ${r.total}</span>`;
+      return `<span class="rt-marca mal" title="${esc(r.nota || "")}">${esc(m.nombre)}</span>`;
+    };
+    const porAnotar = pendientes[0] ? `Por anotar: «${esc(String(pendientes[0].nombre || "").slice(0, 44))}»${pendientes.length > 1 ? ` y ${pendientes.length - 1} más` : ""}` : "";
+    return `<section class="radar-trabajando" aria-live="polite">
+      <div class="rt-cabeza"><b>El radar está trabajando</b>${PUNTOS()}</div>
+      <div class="barrita fija"><i style="width:${Math.max(3, Math.round(avance))}%"></i></div>
+      <ul class="rt-pasos">
+        ${paso(anotando ? "hecho" : "activo", "Leer las webs de las marcas", `${leidas} de ${total}`, !anotando && leyendo ? `Leyendo ${esc(leyendo.nombre)}…` : "")}
+        ${paso(anotando ? "activo" : "espera", "Mirar las fotos y anotar cada novedad", anotando ? `${anotadas} de ${totalAnotar}` : "", anotando ? porAnotar : "")}
+        ${paso("espera", "Armar las tendencias", "")}
+      </ul>
+      <div class="rt-marcas">${ms.map(chip).join("")}</div>
+      <p class="rt-consejo">${CONSEJOS[Math.floor(Date.now() / 5000) % CONSEJOS.length]}</p>
+    </section>`;
+  }
   function vInspiracion() {
     const ms = [...S.marcas].sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
     const tab = S.iTab || (S.iTab = ms.length ? "novedades" : "marcas");
@@ -2000,12 +2096,7 @@ button.inicio-card:hover { border-color: var(--tx); }
     const pest = (k, n) => `<button data-accion="iTab" data-f="${k}" aria-pressed="${tab === k}">${n}</button>`;
     const cabeza = `<div class="cabeza"><h1>Inspiración</h1><p>El radar de las marcas que seguís: qué están sacando y qué se repite entre ellas. Sirve para leer tendencias (colores, materiales, formas), no para copiar modelos.</p></div>
       <div class="filtros" role="group" aria-label="Qué ver">${pest("novedades", `Novedades · ${S.novedades.length}`)}${pest("tendencias", "Tendencias")}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
-    const barra = ms.length ? `<div class="radar-barra">
-        ${escribe() && window.tallerWeb ? `<button class="btn" data-accion="actualizarRadar" ${andando ? "disabled" : ""}>${ICONO_ACT}${andando ? "Actualizando…" : "Actualizar información"}</button>` : ""}
-        <span class="estado">${andando ? `Leyendo las webs: ${est.hechas || 0} de ${est.total || ms.length} marcas${est.nuevas ? ` · ${est.nuevas} novedades nuevas` : ""}. Podés seguir usando el taller.` : est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}` : "Todavía no se actualizó."}</span>
-        ${andando ? `<div class="barrita fija"><i style="width:${Math.max(4, Math.round(100 * (est.hechas || 0) / Math.max(1, est.total || 1)))}%"></i></div>` : ""}
-        ${!andando && est?.nota ? `<p class="estado" style="flex-basis:100%">${esc(est.nota)}</p>` : ""}
-      </div>` : "";
+    const barra = ms.length ? panelRadar(est, ms) : "";
     if (tab === "marcas") {
       const fila = (m) => {
         const r = est?.porMarca?.[m.id];
@@ -2028,13 +2119,16 @@ button.inicio-card:hover { border-color: var(--tx); }
     const filtro = conNovedades.length > 1 ? `<select class="filtro-marcas" data-accion="iMarca" aria-label="Filtrar por marca"><option value="">Todas las marcas</option>${conNovedades.map((m) => `<option value="${esc(m.id)}" ${S.iMarca === m.id ? "selected" : ""}>${esc(m.nombre)} · ${S.novedades.filter((n) => n.marca === m.id).length}</option>`).join("")}</select>` : "";
     const novs = S.novedades.filter((n) => !S.iMarca || n.marca === S.iMarca).sort((a, b) => String(b.visto || "").localeCompare(String(a.visto || "")) || String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
     const nueva = (n) => { const r = est?.porMarca?.[n.marca]; return r?.primera && Date.parse(n.visto || 0) - Date.parse(r.primera) > 6e4 && Date.parse(n.visto || 0) > Date.now() - 14 * DIA; };
+    const inicial = !S.radarVistas.size;
     const tarjeta = (n) => {
+      const aparece = !inicial && !S.radarVistas.has(n.id);
+      S.radarVistas.add(n.id);
       const a = n.analisis || {};
       const notas = [a.tipo && a.tipo !== "otro" ? a.tipo : "", (a.colores || [])[0] || "", (a.materiales || [])[0] || ""].filter(Boolean).join(" · ");
-      return `<a class="nove" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+      return `<a class="nove${aparece ? " aparece" : ""}" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
         <span class="nove-foto">${n.foto ? `<img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}${nueva(n) ? `<span class="sello-nuevo">Nuevo</span>` : ""}</span>
         <span class="etiqueta">${esc(n.marcaNombre || "")}</span><b>${esc(n.nombre)}</b>
-        ${precioTexto(n) ? `<small>${esc(precioTexto(n))}</small>` : ""}${notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
+        ${precioTexto(n) ? `<small>${esc(precioTexto(n))}</small>` : ""}${!n.analisis ? `<small class="anotando" style="${fase(1400)}" aria-label="Anotando"></small>` : notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
     };
     return cabeza + barra + filtro + (novs.length ? `<div class="novedades">${novs.map(tarjeta).join("")}</div>` : `<div class="vacio">${andando ? "Leyendo las webs de las marcas…" : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`);
   }
@@ -2248,6 +2342,7 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
 
   // ---------- Eventos ----------
   document.addEventListener("click", async (ev) => {
+    S.forzar = true;
     const tab = ev.target.closest("[data-tab]");
     if (tab) {
       if (S.tab === "ficha" && S.fichaSucia && tab.dataset.tab !== "ficha" && !confirm("Tenés cambios sin guardar en la ficha. ¿Salir igual?")) return;
@@ -2400,6 +2495,7 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
   });
 
   document.addEventListener("change", async (ev) => {
+    if (ev.target.matches("[data-accion='hModelo'], [data-accion='iMarca']")) S.forzar = true;
     if (ev.target.matches("select[data-rol]")) {
       const s = ev.target;
       s.disabled = true;
@@ -2430,6 +2526,11 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
     else if (ev.target.id !== "revTexto" && ev.key === "ArrowRight") moverRevision(1);
   });
 
+  // Al salir de un formulario vacío, se dibuja lo que había quedado esperando
+  document.addEventListener("focusout", () => setTimeout(() => { if (S.vistaPendiente && !vistaOcupada()) render(); }, 60));
+  // Mientras el radar trabaja, la pantalla se refresca sola cada pocos segundos (avance, consejos, «hace…»)
+  setInterval(() => { if (S.db && radarAndando(estadoRadar()) && (S.tab === "inspiracion" || S.tab === "inicio")) render(); }, 4000);
+
   document.addEventListener("input", (ev) => {
     if (ev.target.closest("form[data-form='ficha']")) S.fichaSucia = true;
     if (ev.target.id === "revTexto" && S.revision) S.revision.texto = ev.target.value;
@@ -2439,6 +2540,7 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
   document.addEventListener("submit", async (ev) => {
     const f = ev.target.closest("form[data-form]");
     if (!f) return;
+    S.forzar = true;
     ev.preventDefault();
     const boton = f.querySelector("button[type='submit']");
     if (boton) boton.disabled = true;
