@@ -1,0 +1,1606 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23000'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-size='42' text-anchor='middle' fill='%23fff'%3ES%3C/text%3E%3C/svg%3E">
+<title>Taller Santesteban</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap" rel="stylesheet">
+<style>
+/* Estética Santesteban: blanco y negro, Tenor Sans, mayúsculas espaciadas, fotos sobre gris claro, sin redondeos ni sombras. */
+:root {
+  --bg: #FFFFFF; --tx: #000000; --mu: #707070; --li: #E5E5E5; --foto: #F4F4F4; --suave: #F7F7F7;
+  --inv-bg: #000000; --inv-tx: #FFFFFF; --velo: rgba(0, 0, 0, .45); --logo: none;
+  --fuente: "Tenor Sans", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B0B0B; --tx: #F2F2F2; --mu: #9A9A9A; --li: #2A2A2A; --foto: #171717; --suave: #121212;
+    --inv-bg: #F2F2F2; --inv-tx: #0B0B0B; --velo: rgba(0, 0, 0, .7); --logo: invert(1);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B0B0B; --tx: #F2F2F2; --mu: #9A9A9A; --li: #2A2A2A; --foto: #171717; --suave: #121212;
+  --inv-bg: #F2F2F2; --inv-tx: #0B0B0B; --velo: rgba(0, 0, 0, .7); --logo: invert(1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.6 var(--fuente); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+
+/* Armazón */
+.app { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+.lateral { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--bg); border-right: 1px solid var(--li);
+  padding: 34px 22px 28px max(22px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 36px; }
+.marca { display: flex; flex-direction: column; gap: 10px; }
+.marca img { height: 15px; width: auto; align-self: flex-start; filter: var(--logo); }
+.marca span { font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--mu); }
+.menu { display: flex; flex-direction: column; gap: 4px; }
+.menu button { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: none; padding: 7px 0; cursor: pointer;
+  color: var(--mu); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; text-align: left; }
+.menu button:hover { color: var(--tx); }
+.menu button[aria-current="page"] { color: var(--tx); }
+.menu button[aria-current="page"]::before { content: ""; width: 14px; height: 1px; background: var(--tx); margin-right: -2px; }
+.menu svg { display: none; }
+.menu .contador { margin-left: auto; }
+.contador { display: inline-block; min-width: 18px; padding: 0 5px; background: var(--inv-bg); color: var(--inv-tx); font-size: 10px; line-height: 18px; text-align: center; letter-spacing: 0; }
+.contador.suave { background: none; color: var(--mu); }
+.grupo-modelos { display: flex; flex-direction: column; gap: 12px; }
+.grupo-modelos .titulo { display: flex; align-items: center; justify-content: space-between; }
+.etiqueta { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--mu); }
+.mas { border: 0; background: none; padding: 0; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; color: var(--tx);
+  border-bottom: 1px solid var(--tx); }
+.modelos { display: flex; flex-direction: column; gap: 6px; }
+.modelo { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; background: none; border: 0;
+  padding: 4px 0; cursor: pointer; width: 100%; color: var(--mu); }
+.modelo:hover, .modelo[aria-current="true"] { color: var(--tx); }
+.modelo img, .modelo .sinfoto { width: 44px; height: 44px; object-fit: contain; background: var(--foto); }
+.modelo[aria-current="true"] img { outline: 1px solid var(--tx); outline-offset: 2px; }
+.modelo b { display: block; font-weight: 400; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--tx); }
+.modelo small { font-size: 11px; color: var(--mu); }
+.contenido { padding: 40px max(20px, env(safe-area-inset-right)) 80px 48px; min-width: 0; }
+.contenido > div { max-width: 1180px; }
+.cabeza { margin: 0 0 28px; }
+.cabeza h1 { font-weight: 400; font-size: 30px; line-height: 1.15; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 10px; }
+.cabeza p { margin: 0; color: var(--mu); max-width: 680px; }
+.aviso { border: 1px solid var(--li); padding: 14px 16px; color: var(--mu); margin: 0 0 22px; background: var(--suave); }
+.aviso strong { color: var(--tx); font-weight: 400; }
+
+/* Botones, etiquetas */
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--tx); background: transparent; padding: 10px 18px; cursor: pointer;
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase; text-decoration: none; border-radius: 0; }
+.btn:hover { background: var(--tx); color: var(--bg); }
+.btn.prim { background: var(--tx); color: var(--bg); }
+.btn.prim:hover { opacity: .85; }
+.btn.ok, .btn.no { border-color: var(--tx); }
+.btn.no { color: var(--mu); border-color: var(--li); }
+.btn.no:hover { color: var(--bg); background: var(--mu); border-color: var(--mu); }
+.btn.chico { padding: 7px 12px; font-size: 10px; }
+.btn:disabled { opacity: .4; cursor: default; }
+button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 1px solid var(--tx); outline-offset: 3px; }
+.chip { display: inline-block; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; padding: 3px 7px; color: var(--mu); border: 1px solid var(--li); white-space: nowrap; line-height: 1.3; }
+.chip.invierno, .chip.verano { color: var(--tx); }
+.chip.guardada { background: var(--tx); color: var(--bg); border-color: var(--tx); }
+.chip.descartada { color: var(--mu); background: var(--suave); border-color: var(--suave); }
+.chip.propuesta, .chip.pendiente { color: var(--tx); border-color: var(--tx); }
+.fila { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.vacio { border-top: 1px solid var(--li); border-bottom: 1px solid var(--li); padding: 34px; text-align: center; color: var(--mu); }
+.filtros { display: flex; gap: 22px; flex-wrap: wrap; margin: 40px 0 22px; align-items: center; border-bottom: 1px solid var(--li); }
+.filtros button { border: 0; background: none; padding: 0 0 10px; margin-bottom: -1px; cursor: pointer; color: var(--mu); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; border-bottom: 1px solid transparent; }
+.filtros button[aria-pressed="true"] { color: var(--tx); border-bottom-color: var(--tx); }
+.filtros select { width: auto; margin-bottom: 8px; }
+select, input[type="text"], textarea { background: var(--bg); border: 1px solid var(--li); border-radius: 0; padding: 10px 12px; width: 100%; }
+select:focus, input[type="text"]:focus, textarea:focus { border-color: var(--tx); outline: none; }
+textarea { min-height: 96px; resize: vertical; }
+label { display: flex; flex-direction: column; gap: 8px; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--mu); }
+label textarea, label input, label select { font-size: 14px; letter-spacing: 0; text-transform: none; color: var(--tx); }
+
+/* Taller */
+.ficha { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 36px; align-items: start; }
+.ficha .original { background: var(--foto); aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; cursor: zoom-in; border: 0; padding: 0; }
+.ficha .original img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.ficha h1 { font-weight: 400; font-size: 34px; line-height: 1.1; letter-spacing: .06em; text-transform: uppercase; margin: 12px 0 14px; }
+.ficha dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 18px; margin: 0 0 22px; }
+.ficha dt { color: var(--mu); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; padding-top: 3px; }
+.ficha dd { margin: 0; }
+.grilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 36px 22px; }
+.tarjeta { background: none; border: 0; cursor: pointer; text-align: left; padding: 0; display: flex; flex-direction: column; gap: 12px; color: var(--tx); }
+.tarjeta .foto { aspect-ratio: 1; background: var(--foto); display: grid; place-items: center; overflow: hidden; }
+.tarjeta .foto img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; transition: transform .4s ease; }
+.tarjeta:hover .foto img { transform: scale(1.03); }
+.tarjeta .texto { display: flex; flex-direction: column; gap: 6px; }
+.tarjeta b { font-weight: 400; font-size: 14px; }
+.tarjeta p { margin: 0; color: var(--mu); font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tarjeta.descartada .foto img { opacity: .45; filter: grayscale(1); }
+.ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 28px; margin-top: 6px; }
+.idea { border-top: 1px solid var(--li); padding: 16px 0; display: flex; flex-direction: column; gap: 8px; }
+.idea b { font-weight: 400; font-size: 15px; letter-spacing: .04em; text-transform: uppercase; }
+.idea p { margin: 0; }
+.idea small { color: var(--mu); font-size: 12px; }
+.seccion { margin-top: 44px; }
+.seccion > .etiqueta { display: block; margin-bottom: 14px; }
+
+/* Historial */
+.resumen { display: flex; gap: 0; flex-wrap: wrap; margin: 0 0 4px; border-top: 1px solid var(--li); border-bottom: 1px solid var(--li); }
+.dato { padding: 16px 28px 16px 0; margin-right: 28px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid var(--li); min-width: 130px; }
+.dato:last-child { border-right: 0; }
+.dato b { font-weight: 400; font-size: 30px; line-height: 1; }
+.dato span { color: var(--mu); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+.grupo { margin-top: 40px; }
+.grupo h2 { display: flex; align-items: center; gap: 14px; font-weight: 400; font-size: 18px; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 6px; }
+.grupo h2 img { width: 40px; height: 40px; object-fit: contain; background: var(--foto); mix-blend-mode: multiply; }
+.grupo h2 small { font-size: 10px; letter-spacing: .16em; color: var(--mu); }
+.registros { display: flex; flex-direction: column; border-top: 1px solid var(--tx); }
+.registro { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 22px; align-items: start; border-bottom: 1px solid var(--li); padding: 18px 0; }
+.registro > button.foto { border: 0; padding: 0; background: var(--foto); width: 96px; height: 96px; cursor: zoom-in; overflow: hidden; }
+.registro > button.foto img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.registro.descartada > button.foto img { opacity: .5; filter: grayscale(1); }
+.registro b { font-weight: 400; font-size: 15px; margin-right: 6px; }
+.porque { margin: 10px 0 6px; }
+.porque em { font-style: normal; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--mu); margin-right: 6px; }
+.registro.guardada .porque em { color: var(--tx); }
+.registro small, .quien { color: var(--mu); font-size: 11.5px; }
+.linea { display: flex; flex-direction: column; border-top: 1px solid var(--tx); }
+.evento { display: grid; grid-template-columns: 80px minmax(0, 1fr) 56px; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--li); align-items: start; }
+.evento time { color: var(--mu); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding-top: 3px; }
+.evento .que { display: flex; flex-direction: column; gap: 6px; }
+.evento img { width: 56px; height: 56px; object-fit: contain; background: var(--foto); cursor: pointer; mix-blend-mode: multiply; }
+.vistas { display: inline-flex; gap: 22px; }
+.vistas button { border: 0; background: none; padding: 0 0 10px; margin-bottom: -1px; cursor: pointer; color: var(--mu); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; border-bottom: 1px solid transparent; }
+.vistas button[aria-pressed="true"] { color: var(--tx); border-bottom-color: var(--tx); }
+
+/* Cerebro */
+.cerebro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 8px; border-top: 1px solid var(--tx); }
+.columna { padding: 22px 26px 10px 0; border-right: 1px solid var(--li); }
+.columna + .columna { padding-left: 26px; }
+.columna:last-child { border-right: 0; padding-right: 0; }
+.columna h3 { font-weight: 400; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+.columna h3 small { font-size: 11px; color: var(--mu); letter-spacing: 0; }
+.columna > p { margin: 0; color: var(--mu); font-size: 12px; }
+.columna ul { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; }
+.columna li { border-top: 1px solid var(--li); padding: 14px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.prueba { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; color: var(--mu); font-size: 11px; }
+.prueba img { width: 32px; height: 32px; object-fit: contain; background: var(--foto); cursor: pointer; mix-blend-mode: multiply; }
+.prueba a { text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.quitar { border: 0; background: none; color: var(--mu); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; }
+.quitar:hover { color: var(--tx); }
+.agregar { display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 10px; margin-top: 30px; }
+
+/* Pedidos */
+.pasos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0 0 34px; border-top: 1px solid var(--tx); }
+.paso { padding: 22px 26px 22px 0; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--li); }
+.paso + .paso { padding-left: 26px; }
+.paso:last-child { border-right: 0; }
+.paso .num { font-size: 30px; line-height: 1; color: var(--tx); }
+.paso .num::before { content: "0"; }
+.paso b { font-weight: 400; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+.paso p { margin: 0; color: var(--mu); }
+.nuevo-pedido { display: grid; grid-template-columns: 220px minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.nuevo-pedido textarea { min-height: 44px; }
+.pedido { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 20px; border-bottom: 1px solid var(--li); padding: 16px 0; align-items: center; }
+.pedido img, .pedido .sinfoto { width: 72px; height: 72px; object-fit: contain; background: var(--foto); mix-blend-mode: multiply; }
+.pedido p { margin: 6px 0 4px; }
+.lista { display: flex; flex-direction: column; border-top: 1px solid var(--tx); }
+
+/* Ventanas */
+.velo { position: fixed; inset: 0; background: var(--velo); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+.velo.abierto { display: flex; }
+.ventana { background: var(--bg); max-width: 1080px; width: 100%; max-height: calc(100vh - 32px); overflow: auto; border: 1px solid var(--li); }
+.ventana.chica { max-width: 600px; }
+.detalle { display: grid; grid-template-columns: 1.3fr 1fr; }
+.detalle .imagenes { background: var(--foto); position: relative; min-height: 340px; display: grid; place-items: center; }
+.detalle .imagenes img { width: 100%; height: 100%; max-height: 80vh; object-fit: contain; mix-blend-mode: multiply; }
+.conmutador { position: absolute; top: 16px; left: 16px; display: flex; gap: 16px; }
+.conmutador button { border: 0; background: none; padding: 0 0 4px; cursor: pointer; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--mu); border-bottom: 1px solid transparent; }
+.conmutador button[aria-pressed="true"] { color: var(--tx); border-bottom-color: var(--tx); }
+.detalle .info { padding: 34px 30px; display: flex; flex-direction: column; gap: 16px; }
+.detalle h2 { font-weight: 400; font-size: 24px; line-height: 1.2; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.detalle .desc { margin: 0; }
+.estado { font-size: 13px; color: var(--mu); margin: 0; }
+.estado b { font-weight: 400; color: var(--tx); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin-right: 4px; }
+.linaje { font-size: 13px; color: var(--mu); margin: 0; }
+.linaje a { color: var(--tx); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.cerrar { position: sticky; top: 0; float: right; border: 0; background: var(--bg); width: 40px; height: 40px; cursor: pointer; font-size: 22px; font-weight: 300; z-index: 2; }
+.formulario { padding: 34px 30px; display: flex; flex-direction: column; gap: 18px; }
+.formulario h2 { font-weight: 400; font-size: 22px; letter-spacing: .06em; text-transform: uppercase; margin: 0; }
+.formulario p { margin: 0; color: var(--mu); }
+.quien-decide { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 18px; align-items: center; }
+.quien-decide img { width: 72px; height: 72px; object-fit: contain; background: var(--foto); mix-blend-mode: multiply; }
+.eleccion { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opcion { flex-direction: row; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--li); padding: 14px; cursor: pointer; color: var(--tx); font-size: 11px; letter-spacing: .16em; }
+.opcion input { accent-color: var(--tx); margin: 0; }
+.opcion:has(input:checked) { border-color: var(--tx); background: var(--tx); color: var(--bg); }
+.mensaje { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--tx); color: var(--bg); padding: 12px 20px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; z-index: 30; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100vw - 32px); }
+.mensaje.visible { opacity: 1; }
+.oculto { display: none !important; }
+
+@media (max-width: 1100px) { .cerebro { grid-template-columns: 1fr 1fr; } .columna.reglas { grid-column: 1 / -1; border-top: 1px solid var(--li); padding-left: 0; } }
+@media (max-width: 900px) {
+  .app { display: block; }
+  .lateral { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--li); gap: 18px;
+    padding: 20px max(16px, env(safe-area-inset-right)) 14px max(16px, env(safe-area-inset-left)); }
+  .marca { flex-direction: row; align-items: center; justify-content: space-between; }
+  .menu { flex-direction: row; overflow-x: auto; scrollbar-width: none; gap: 20px; }
+  .menu::-webkit-scrollbar { display: none; }
+  .menu button { width: auto; white-space: nowrap; }
+  .menu button[aria-current="page"]::before { display: none; }
+  .menu button[aria-current="page"] { border-bottom: 1px solid var(--tx); }
+  .modelos { flex-direction: row; overflow-x: auto; gap: 16px; padding-bottom: 4px; }
+  .modelo { min-width: 170px; }
+  body:not([data-seccion="taller"]) .grupo-modelos { display: none; }
+  .contenido { padding: 26px max(16px, env(safe-area-inset-right)) 60px max(16px, env(safe-area-inset-left)); }
+  .detalle { grid-template-columns: 1fr; }
+  .pasos { grid-template-columns: 1fr; }
+  .paso, .paso + .paso { padding: 18px 0; border-right: 0; border-bottom: 1px solid var(--li); }
+  .nuevo-pedido { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .cabeza h1 { font-size: 24px; }
+  .ficha { grid-template-columns: 1fr; gap: 18px; }
+  .ficha .original { max-width: 240px; }
+  .ficha h1 { font-size: 26px; }
+  .grilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 12px; }
+  .cerebro { grid-template-columns: 1fr; }
+  .columna, .columna + .columna { padding: 18px 0; border-right: 0; border-bottom: 1px solid var(--li); }
+  .dato { min-width: 0; flex: 1 1 0; padding: 12px 10px 12px 0; margin-right: 10px; }
+  .dato b { font-size: 24px; }
+  .registro { grid-template-columns: 72px minmax(0, 1fr); gap: 14px; }
+  .registro > button.foto { width: 72px; height: 72px; }
+  .registro > .acciones { grid-column: 1 / -1; }
+  .evento { grid-template-columns: 52px minmax(0, 1fr) 48px; gap: 12px; }
+  .evento img { width: 48px; height: 48px; }
+  .agregar { grid-template-columns: 1fr; }
+  .pedido { grid-template-columns: 56px minmax(0, 1fr); }
+  .pedido img, .pedido .sinfoto { width: 56px; height: 56px; }
+  .pedido > .acciones { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .tarjeta .foto img { transition: none; } .tarjeta:hover .foto img { transform: none; } }
+
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) img { mix-blend-mode: normal !important; } }
+:root[data-theme="dark"] img { mix-blend-mode: normal !important; }
+
+/* Pedidos en producción dentro de la grilla */
+.tarjeta.en-produccion .foto { position: relative; background: var(--li); }
+.tarjeta.en-produccion .foto img { opacity: .14; filter: grayscale(1); mix-blend-mode: normal; }
+.tarjeta.en-produccion:hover .foto img { transform: none; }
+.sello { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 0 14px;
+  font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: var(--tx); text-align: center; }
+.sello small { font-size: 9.5px; letter-spacing: .14em; color: var(--mu); }
+.sello::after { content: ""; width: 44px; height: 1px; background: var(--tx); animation: produccion 1.8s ease-in-out infinite; }
+@keyframes produccion { 0%, 100% { transform: scaleX(.15); opacity: .35; } 50% { transform: scaleX(1); opacity: 1; } }
+.tarjeta.en-produccion b { color: var(--mu); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .sello::after { animation: none; } }
+
+/* Versión web: entrada con mail y contraseña, cuenta y equipo */
+input[type="email"], input[type="password"] { background: var(--bg); border: 1px solid var(--li); border-radius: 0; padding: 10px 12px; width: 100%; }
+input[type="email"]:focus, input[type="password"]:focus { border-color: var(--tx); outline: none; }
+body.con-acceso .app { visibility: hidden; }
+.acceso { position: fixed; inset: 0; z-index: 40; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 32px 16px; overflow-y: auto; }
+.acceso-caja { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 44px; margin: auto 0; }
+.acceso-caja .marca { flex-direction: column; align-items: flex-start; justify-content: flex-start; }
+.acceso-caja .marca img { height: 18px; }
+.acceso-form { display: flex; flex-direction: column; gap: 18px; }
+.acceso-form h1 { font-weight: 400; font-size: 24px; line-height: 1.2; letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+.acceso-form p { margin: 0; color: var(--mu); }
+.acceso-form .btn { justify-content: center; padding: 13px 18px; }
+.acceso-form .acceso-error { color: var(--tx); border-left: 1px solid var(--tx); padding-left: 12px; }
+.acceso-error:empty { display: none; }
+.acceso-ayuda { font-size: 12.5px; }
+.acceso-form b { font-weight: 400; color: var(--tx); overflow-wrap: anywhere; }
+.acceso-form input.codigo { font-size: 26px; letter-spacing: .4em; text-align: center; padding: 12px; }
+.acceso-ayuda a.apagado { color: var(--mu); text-decoration: none; cursor: default; }
+.cuenta { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--li); }
+.cuenta span { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.equipo { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--li); }
+.equipo li { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--li); }
+.equipo li.inactivo b, .equipo li.inactivo .rol { color: var(--mu); }
+.equipo b { display: block; font-weight: 400; font-size: 15px; }
+.equipo small { display: block; color: var(--mu); font-size: 12px; overflow-wrap: anywhere; }
+.equipo .rol { display: flex; flex-direction: column; gap: 4px; }
+.equipo select { width: auto; max-width: 100%; padding: 7px 10px; font-size: 12.5px; }
+.equipo .fila { justify-content: flex-end; }
+.sumar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: end; max-width: 900px; }
+.sumar .btn { justify-content: center; grid-column: 1 / -1; justify-self: start; }
+.link-copiar { font-size: 12.5px; }
+@media (max-width: 900px) {
+  .cuenta { margin-top: 0; padding-top: 12px; }
+  .equipo li { grid-template-columns: 1fr; gap: 10px; }
+  .equipo .fila { justify-content: flex-start; }
+  .sumar { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lateral">
+    <div class="marca"><img src="data:image/png;base64,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" alt="Santesteban"><span>Taller de diseño</span></div>
+    <nav class="menu" aria-label="Secciones">
+      <button data-tab="taller" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h14l-1.2 10.2a1.6 1.6 0 0 1-1.6 1.4H7.8a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg>Taller</button>
+      <button data-tab="historial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/><path d="M12 8v4l3 2"/></svg>Historial<span class="contador suave oculto" id="nRevisar"></span></button>
+      <button data-tab="cerebro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 4.5A3 3 0 0 0 6.6 8 3.2 3.2 0 0 0 5 13.6 3 3 0 0 0 8 18.5a2.5 2.5 0 0 0 4 1V5.5a2.5 2.5 0 0 0-2.5-1z"/><path d="M14.5 4.5A3 3 0 0 1 17.4 8 3.2 3.2 0 0 1 19 13.6a3 3 0 0 1-3 4.9 2.5 2.5 0 0 1-4 1"/></svg>Cerebro de la diseñadora</button>
+      <button data-tab="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13l2.2-7.2A1.6 1.6 0 0 1 7.7 4.6h8.6a1.6 1.6 0 0 1 1.5 1.2L20 13"/><path d="M4 13v5a1.6 1.6 0 0 0 1.6 1.6h12.8A1.6 1.6 0 0 0 20 18v-5h-4.5l-1.2 2.2h-4.6L8.5 13z"/></svg>Pedidos de versiones<span class="contador oculto" id="nPedidos"></span></button>
+      <button data-tab="equipo" class="oculto" id="menuEquipo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 14a5 5 0 0 1 3 5"/></svg>Equipo</button>
+    </nav>
+    <div class="grupo-modelos">
+      <div class="titulo"><span class="etiqueta">Modelos</span><button class="mas oculto" id="botonSubir" data-accion="nuevoModelo">Subir</button></div>
+      <div class="modelos" id="listaModelos"></div>
+    </div>
+    <div class="cuenta oculto" id="cuenta"><span id="cuentaNombre"></span><button class="mas" data-accion="salir">Salir</button></div>
+  </aside>
+  <main class="contenido">
+    <div id="avisoGeneral" class="aviso oculto"></div>
+    <div id="vista"><div class="aviso">Cargando el taller…</div></div>
+  </main>
+</div>
+
+<div class="velo" id="velo" role="dialog" aria-modal="true"><div class="ventana" id="ventana"></div></div>
+<div class="mensaje" id="mensaje" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
+<script>window.TALLER_CONFIG = {"url": "https://uciczinndycglgiqvkhh.supabase.co", "clave": "sb_publishable_Iv3ZOIoIl8nRoamG6Aq5Nw_p7nYcK6-", "largoCodigo": 6, "repoPagina": "joaquinlombardi-wq/taller-santesteban"};</script>
+<script>
+// Versión web del taller: conecta la página con Supabase (datos, fotos y personas) y muestra la pantalla para entrar.
+// Imita la forma de trabajar del taller en Claude (window.claude.use), así la página es la misma en los dos lugares.
+(() => {
+  const C = window.TALLER_CONFIG || {};
+  const sb = window.supabase.createClient(C.url, C.clave, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  });
+  const COLECCIONES = ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas"];
+  const W = { sesion: null, yo: null, miembros: [], datos: new Map(), oyentes: new Map(), alCambiar: new Set(), suscripto: false };
+  COLECCIONES.forEach((c) => W.datos.set(c, new Map()));
+  let abrirTaller;
+  window.tallerListo = new Promise((r) => (abrirTaller = r));
+
+  const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const azar = (n) => crypto.getRandomValues(new Uint8Array(n));
+  const nuevoId = () => [...azar(20)].map((x) => "abcdefghijklmnopqrstuvwxyz0123456789"[x % 36]).join("");
+  const nuevoIdFoto = () => [...azar(16)].map((x) => x.toString(16).padStart(2, "0")).join("");
+  const copia = (d) => JSON.parse(JSON.stringify(d ?? {}));
+  function fallo(e, mensaje) {
+    const sinPermiso = e?.code === "42501" || /row-level security|permission denied/i.test(e?.message || "");
+    return Object.assign(new Error(e?.message || "Error"), { code: sinPermiso ? "not_granted" : e?.code || "error", mensaje });
+  }
+
+  // ---------- Fotos (privadas: se piden links firmados que duran 7 días) ----------
+  const LS_FOTOS = "taller-fotos-v1";
+  const DURACION = 7 * 24 * 3600;
+  const fotos = new Map();
+  const fallidas = new Map();
+  try {
+    const g = JSON.parse(localStorage.getItem(LS_FOTOS) || "{}");
+    for (const [id, f] of Object.entries(g)) if (f && f.e > Date.now()) fotos.set(id, f);
+  } catch (_) { /* sin memoria del navegador */ }
+  let tGuardar;
+  const guardarFotos = () => {
+    clearTimeout(tGuardar);
+    tGuardar = setTimeout(() => { try { localStorage.setItem(LS_FOTOS, JSON.stringify(Object.fromEntries(fotos))); } catch (_) { /* nada */ } }, 400);
+  };
+  const vigente = (id) => { const f = fotos.get(id); return f && f.e > Date.now() + 6 * 3600e3; };
+  async function firmar(ids) {
+    let nuevas = 0;
+    for (let i = 0; i < ids.length; i += 100) {
+      const parte = ids.slice(i, i + 100);
+      const { data, error } = await sb.storage.from("imagenes").createSignedUrls(parte, DURACION);
+      if (error) throw error;
+      const vence = Date.now() + DURACION * 1000;
+      for (const x of data || []) {
+        if (x.signedUrl && !x.error) { fotos.set(x.path, { u: x.signedUrl, e: vence }); fallidas.delete(x.path); nuevas++; }
+        else if (x.path) fallidas.set(x.path, Date.now());
+      }
+    }
+    if (nuevas) guardarFotos();
+    return nuevas;
+  }
+  async function asegurarFotos(docs) {
+    const faltan = new Set();
+    for (const d of docs) for (const k of ["original", "imagen"]) {
+      const id = d?.[k];
+      if (typeof id === "string" && id && !vigente(id) && !(Date.now() - (fallidas.get(id) || 0) < 300e3)) faltan.add(id);
+    }
+    if (faltan.size) await firmar([...faltan]);
+  }
+  const porFirmar = new Set();
+  let tFirma;
+  window.tallerFoto = (id) => {
+    const f = fotos.get(id);
+    if (!vigente(id) && !(Date.now() - (fallidas.get(id) || 0) < 300e3)) {
+      porFirmar.add(id);
+      clearTimeout(tFirma);
+      tFirma = setTimeout(async () => {
+        const ids = [...porFirmar];
+        porFirmar.clear();
+        try { if (await firmar(ids)) COLECCIONES.forEach(emitir); } catch (e) { console.warn(e); }
+      }, 40);
+    }
+    return f && f.e > Date.now() ? f.u : "";
+  };
+
+  // ---------- Documentos (como la base del taller en Claude) ----------
+  function instantanea(c) {
+    const docs = [...(W.datos.get(c) || new Map())].map(([id, d]) => ({ id, data: () => copia(d) }));
+    return { docs, size: docs.length, empty: !docs.length, forEach: (f) => docs.forEach(f) };
+  }
+  const porEmitir = new Set();
+  let tEmitir;
+  function emitir(c) {
+    porEmitir.add(c);
+    clearTimeout(tEmitir);
+    tEmitir = setTimeout(async () => {
+      const cs = [...porEmitir];
+      porEmitir.clear();
+      for (const col of cs) {
+        try { await asegurarFotos([...(W.datos.get(col)?.values() || [])]); } catch (e) { console.warn(e); }
+        for (const o of W.oyentes.get(col) || []) { try { o.cb(instantanea(col)); } catch (e) { console.error(e); } }
+      }
+    }, 20);
+  }
+  const mapa = (c) => { if (!W.datos.has(c)) W.datos.set(c, new Map()); return W.datos.get(c); };
+
+  async function cargarTodo() {
+    const filas = [];
+    for (let desde = 0; ; desde += 1000) {
+      const { data, error } = await sb.from("documentos").select("coleccion,id,datos").order("coleccion").order("id").range(desde, desde + 999);
+      if (error) throw error;
+      filas.push(...data);
+      if (data.length < 1000) break;
+    }
+    for (const m of W.datos.values()) m.clear();
+    for (const f of filas) mapa(f.coleccion).set(f.id, f.datos);
+    try { await asegurarFotos(filas.map((f) => f.datos)); } catch (e) { console.warn(e); }
+    W.cargado = Date.now();
+  }
+
+  async function cargarMiembros() {
+    const { data, error } = await sb.from("miembros").select("email,id,nombre,rol,activo,alias,ultimo_ingreso");
+    if (error) throw error;
+    W.miembros = data || [];
+    const yo = W.miembros.find((m) => m.id === W.sesion?.user?.id && m.activo) || null;
+    if (W.yo && !yo) { await salir(); return; } // le quitaron el acceso mientras estaba adentro
+    W.yo = yo;
+    W.alCambiar.forEach((f) => { try { f(); } catch (_) { /* nada */ } });
+  }
+
+  function suscribir() {
+    if (W.suscripto) return;
+    W.suscripto = true;
+    let primera = true;
+    sb.channel("taller")
+      .on("postgres_changes", { event: "*", schema: "public", table: "documentos" }, (p) => {
+        const f = p.eventType === "DELETE" ? p.old : p.new;
+        if (!f?.coleccion || !f?.id) return;
+        if (p.eventType === "DELETE") mapa(f.coleccion).delete(f.id);
+        else mapa(f.coleccion).set(f.id, p.new.datos);
+        emitir(f.coleccion);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "miembros" }, () => { cargarMiembros().catch(console.warn); })
+      .subscribe((estado) => {
+        if (estado !== "SUBSCRIBED") return;
+        if (primera) { primera = false; return; }
+        refrescar(); // volvió la conexión: traigo todo por si me perdí algún cambio
+      });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && Date.now() - (W.cargado || 0) > 5 * 60e3) refrescar();
+    });
+  }
+  function refrescar() {
+    Promise.all([cargarTodo(), cargarMiembros()]).then(() => COLECCIONES.forEach(emitir)).catch(console.warn);
+  }
+
+  const db = {
+    collection(c) {
+      return {
+        onSnapshot(cb, err) {
+          if (!W.oyentes.has(c)) W.oyentes.set(c, new Set());
+          const o = { cb, err };
+          W.oyentes.get(c).add(o);
+          setTimeout(() => { try { cb(instantanea(c)); } catch (e) { console.error(e); } }, 0);
+          return () => W.oyentes.get(c)?.delete(o);
+        },
+        async add(datos) {
+          const id = nuevoId();
+          mapa(c).set(id, copia(datos));
+          emitir(c);
+          const { error } = await sb.from("documentos").insert({ coleccion: c, id, datos });
+          if (error) { mapa(c).delete(id); emitir(c); throw fallo(error); }
+          return { id };
+        },
+        doc(id) {
+          return {
+            id,
+            async get() {
+              const { data, error } = await sb.from("documentos").select("datos").match({ coleccion: c, id }).maybeSingle();
+              if (error) throw fallo(error);
+              return { id, exists: !!data, data: () => (data ? copia(data.datos) : undefined) };
+            },
+            async set(datos) {
+              const antes = mapa(c).get(id);
+              mapa(c).set(id, copia(datos));
+              emitir(c);
+              const { error } = await sb.from("documentos").upsert({ coleccion: c, id, datos });
+              if (error) { if (antes === undefined) mapa(c).delete(id); else mapa(c).set(id, antes); emitir(c); throw fallo(error); }
+            },
+            async update(parche) {
+              const antes = mapa(c).get(id);
+              if (antes) { mapa(c).set(id, { ...antes, ...copia(parche) }); emitir(c); }
+              const { error } = await sb.rpc("actualizar_documento", { p_coleccion: c, p_id: id, p_parche: parche });
+              if (error) { if (antes) { mapa(c).set(id, antes); emitir(c); } throw fallo(error); }
+            },
+            async delete() {
+              const antes = mapa(c).get(id);
+              mapa(c).delete(id);
+              emitir(c);
+              const { error } = await sb.from("documentos").delete().match({ coleccion: c, id });
+              if (error) { if (antes) { mapa(c).set(id, antes); emitir(c); } throw fallo(error); }
+            },
+          };
+        },
+      };
+    },
+  };
+
+  // Achica las fotos muy pesadas antes de subirlas (las del celular pueden pesar 5 MB o más)
+  async function achicar(archivo) {
+    try {
+      if (!/^image\/(jpeg|png|webp)$/.test(archivo.type) || archivo.size < 1.5e6) return archivo;
+      const bm = await createImageBitmap(archivo);
+      const k = Math.min(1, 2400 / Math.max(bm.width, bm.height));
+      if (k === 1 && archivo.size < 4e6) return archivo;
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(bm.width * k);
+      cv.height = Math.round(bm.height * k);
+      cv.getContext("2d").drawImage(bm, 0, 0, cv.width, cv.height);
+      const b = await new Promise((r) => cv.toBlob(r, archivo.type === "image/png" ? "image/png" : "image/jpeg", 0.9));
+      return b && b.size < archivo.size ? b : archivo;
+    } catch (_) {
+      return archivo;
+    }
+  }
+
+  const assets = {
+    async upload(archivo) {
+      const listo = await achicar(archivo);
+      const tipo = listo.type || archivo.type || "";
+      if (!/^image\/(jpeg|png|webp|gif|avif)$/.test(tipo)) throw { mensaje: "La foto tiene que ser JPG, PNG o WEBP" };
+      const id = nuevoIdFoto();
+      const { error } = await sb.storage.from("imagenes").upload(id, listo, { contentType: tipo, cacheControl: "31536000", upsert: false });
+      if (error) throw fallo(error, /size|large/i.test(error.message || "") ? "La foto es muy pesada (máximo 20 MB)" : "No se pudo subir la foto; probá de nuevo");
+      try { await firmar([id]); } catch (_) { /* se firma después */ }
+      return { id, url: window.tallerFoto(id), sizeBytes: listo.size, contentType: tipo };
+    },
+    async list() { return { assets: [], usage: {} }; },
+  };
+
+  const user = {
+    async id() { return W.sesion?.user?.id || ""; },
+    async can(n) { return n === "data.write" ? !!W.yo && W.yo.rol !== "lectura" : null; },
+    async me() { return { id: W.sesion?.user?.id || "", name: W.yo?.nombre || "" }; },
+    async profiles(ids) {
+      const r = {};
+      for (const id of ids || []) {
+        const m = W.miembros.find((x) => x.id === id || (x.alias || []).includes(id));
+        r[id] = { id, name: m?.nombre || "" };
+      }
+      return r;
+    },
+    isOwner: () => W.yo?.rol === "admin",
+    canEdit: () => !!W.yo && W.yo.rol !== "lectura",
+  };
+
+  const downloads = {
+    async save({ filename, data }) {
+      const blob = data instanceof Blob ? data : new Blob([data]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || "taller";
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60e3);
+      return { ok: true };
+    },
+  };
+
+  window.claude = {
+    async use(n) {
+      await window.tallerListo;
+      if (n === "db") return db;
+      if (n === "user") return user;
+      if (n === "downloads") return downloads;
+      if (n === "assets") return W.yo && W.yo.rol !== "lectura" ? assets : null;
+      return null; // "Ideas escritas con Claude" no está en la versión web
+    },
+  };
+
+  // ---------- Equipo ----------
+  const MENSAJES = {
+    mail: "Revisá el mail.", nombre: "Falta el nombre.", no_a_vos: "Tu propia cuenta no se cambia desde acá.",
+    sin_sesion: "Tu sesión venció: volvé a entrar.", solo_admin: "Solo quien administra el taller puede hacer esto.",
+    ya_hay_admin: "El taller ya tiene una cuenta de administración: entrá con tu mail.",
+    datos: "Revisá el nombre y el mail.", no_existe: "No encontré a esa persona.",
+  };
+  async function funcion(accion, cuerpo = {}) {
+    const { data, error } = await sb.functions.invoke("equipo", { body: { accion, ...cuerpo } });
+    if (error) {
+      let d = {};
+      try { d = await error.context?.json?.(); } catch (_) { /* sin detalle */ }
+      throw Object.assign(new Error(d?.error || error.message), { codigo: d?.error || "error", mensaje: MENSAJES[d?.error] || "No se pudo; probá de nuevo." });
+    }
+    return data;
+  }
+  const direccion = () => location.origin + location.pathname;
+  async function salir() {
+    try { localStorage.removeItem(LS_FOTOS); } catch (_) { /* nada */ }
+    try { await sb.auth.signOut(); } catch (_) { /* nada */ }
+    location.replace(direccion());
+  }
+  window.tallerWeb = {
+    yo: () => W.yo,
+    esAdmin: () => W.yo?.rol === "admin",
+    miembros: () => W.miembros.slice(),
+    direccion,
+    alCambiar(f) { W.alCambiar.add(f); },
+    async sumar(d) { const r = await funcion("sumar", d); await cargarMiembros(); return r; },
+    async cambiar(email, cambios) { await funcion("cambiar", { email, ...cambios }); await cargarMiembros(); },
+    salir,
+  };
+
+  // ---------- Pantalla para entrar: mail y código, sin contraseñas ----------
+  const LARGO = Number(C.largoCodigo) || 6;
+  function pantalla(html) {
+    document.body.classList.add("con-acceso");
+    let a = document.getElementById("acceso");
+    if (!a) {
+      a = document.createElement("div");
+      a.id = "acceso";
+      a.className = "acceso";
+      document.body.append(a);
+    }
+    const logo = document.querySelector(".lateral .marca img")?.getAttribute("src") || "";
+    a.innerHTML = `<div class="acceso-caja"><div class="marca"><img src="${esc(logo)}" alt="Santesteban"><span>Taller de diseño</span></div>${html}</div>`;
+    setTimeout(() => a.querySelector("input")?.focus(), 30);
+    return a;
+  }
+  function quitarPantalla() {
+    document.getElementById("acceso")?.remove();
+    document.body.classList.remove("con-acceso");
+  }
+  const esperando = (texto = "Abriendo el taller…") => pantalla(`<div class="acceso-form"><p class="acceso-ayuda">${esc(texto)}</p></div>`);
+
+  function pantallaEntrar(aviso = "", email = "") {
+    const a = pantalla(`<form class="acceso-form" data-acceso="mail" novalidate>
+      <h1>Entrar</h1>
+      <p>${aviso ? esc(aviso) : "Escribí tu mail y te mandamos un código para entrar."}</p>
+      <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" value="${esc(email)}" required></label>
+      <p class="acceso-error" role="alert"></p>
+      <button class="btn prim" type="submit">Mandarme el código</button>
+      <p class="acceso-ayuda oculto" id="primeraVez">Es la primera vez que se usa el taller: <a href="#" data-acceso-ir="primer">crear la cuenta de administración</a>.</p>
+    </form>`);
+    funcion("estado").then((r) => { if (r && !r.hayMiembros) a.querySelector("#primeraVez")?.classList.remove("oculto"); }).catch(() => {});
+  }
+  function pantallaPrimer() {
+    pantalla(`<form class="acceso-form" data-acceso="primer" novalidate>
+      <h1>Cuenta de administración</h1>
+      <p>Es la cuenta de quien maneja el taller: puede sumar personas y quitar accesos. Para entrar te mandamos un código a este mail.</p>
+      <label>Nombre<input type="text" name="nombre" maxlength="80" autocomplete="name" required></label>
+      <label>Mail<input type="email" name="email" autocomplete="email" inputmode="email" required></label>
+      <p class="acceso-error" role="alert"></p>
+      <button class="btn prim" type="submit">Crear y mandarme el código</button>
+      <p class="acceso-ayuda"><a href="#" data-acceso-ir="entrar">Volver</a></p>
+    </form>`);
+  }
+  let espera = null;
+  function pantallaCodigo(email) {
+    const a = pantalla(`<form class="acceso-form" data-acceso="codigo" data-email="${esc(email)}" novalidate>
+      <h1>Revisá tu mail</h1>
+      <p>Te mandamos un código de ${LARGO} números a <b>${esc(email)}</b>. Puede tardar un minuto; si no aparece, mirá en correo no deseado.</p>
+      <label>Código<input type="text" name="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="${LARGO}" required class="codigo"></label>
+      <p class="acceso-error" role="alert"></p>
+      <button class="btn prim" type="submit">Entrar</button>
+      <p class="acceso-ayuda"><a href="#" data-acceso-ir="reenviar" id="reenviar">Mandarme otro código</a> · <a href="#" data-acceso-ir="entrar">Usar otro mail</a></p>
+    </form>`);
+    const campo = a.querySelector("input[name=codigo]");
+    campo.addEventListener("input", () => {
+      campo.value = campo.value.replace(/\D/g, "").slice(0, LARGO);
+      if (campo.value.length === LARGO) campo.form.requestSubmit();
+    });
+    // Para pedir otro código hay que esperar un minuto
+    const link = a.querySelector("#reenviar");
+    let falta = 60;
+    clearInterval(espera);
+    const tic = () => {
+      link.textContent = falta > 0 ? `Mandarme otro código (en ${falta} s)` : "Mandarme otro código";
+      link.classList.toggle("apagado", falta > 0);
+      if (falta-- <= 0) clearInterval(espera);
+    };
+    tic();
+    espera = setInterval(tic, 1000);
+  }
+  function pantallaSinAcceso(email) {
+    pantalla(`<div class="acceso-form">
+      <h1>Sin acceso</h1>
+      <p>La cuenta ${esc(email || "")} no tiene acceso al taller. Pedile a quien lo administra que te sume.</p>
+      <button class="btn" type="button" data-acceso-ir="salir">Salir</button>
+    </div>`);
+  }
+  function pantallaError() {
+    pantalla(`<div class="acceso-form">
+      <h1>No se pudo abrir el taller</h1>
+      <p>Revisá tu conexión y volvé a intentar. Si sigue sin abrir, avisale a quien administra el taller.</p>
+      <button class="btn prim" type="button" data-acceso-ir="reintentar">Reintentar</button>
+    </div>`);
+  }
+
+  // Pide el código. Devuelve un texto de error para mostrar, o "" si salió bien.
+  async function pedirCodigo(email) {
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: direccion() } });
+    if (!error) return "";
+    const m = `${error.code || ""} ${error.message || ""}`;
+    if (/otp_disabled|signups? not allowed|not found|user_not_found/i.test(m)) return "Ese mail no tiene acceso al taller. Pedile a quien lo administra que te sume.";
+    if (/rate|security purposes|seconds|too many/i.test(m)) return "Ya te mandamos un código hace poco: esperá un minuto y probá de nuevo.";
+    if (/banned/i.test(m)) return "Esta cuenta no tiene acceso al taller.";
+    return "No se pudo mandar el código; probá de nuevo en un rato.";
+  }
+
+  async function continuar(sesion) {
+    W.sesion = sesion;
+    esperando();
+    try {
+      await cargarMiembros();
+      if (!W.yo) { pantallaSinAcceso(sesion?.user?.email); return; }
+      suscribir();
+      await cargarTodo();
+    } catch (e) {
+      console.error(e);
+      pantallaError();
+      return;
+    }
+    clearInterval(espera);
+    quitarPantalla();
+    abrirTaller();
+    sb.rpc("marcar_ingreso").then(() => {}, () => {});
+  }
+
+  document.addEventListener("click", async (ev) => {
+    const ir = ev.target.closest("[data-acceso-ir]");
+    if (!ir) return;
+    ev.preventDefault();
+    const a = ir.dataset.accesoIr;
+    if (a === "primer") pantallaPrimer();
+    else if (a === "entrar") { clearInterval(espera); pantallaEntrar(); }
+    else if (a === "salir") salir();
+    else if (a === "reintentar") arrancar();
+    else if (a === "reenviar") {
+      if (ir.classList.contains("apagado")) return;
+      const f = ir.closest("form");
+      const err = f.querySelector(".acceso-error");
+      const problema = await pedirCodigo(f.dataset.email);
+      if (problema) err.textContent = problema;
+      else pantallaCodigo(f.dataset.email);
+    }
+  });
+
+  document.addEventListener("submit", async (ev) => {
+    const f = ev.target.closest("form[data-acceso]");
+    if (!f) return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    const d = new FormData(f);
+    const err = f.querySelector(".acceso-error");
+    const boton = f.querySelector("button[type=submit]");
+    if (boton.disabled) return;
+    const decir = (t) => { err.textContent = t; boton.disabled = false; };
+    err.textContent = "";
+    boton.disabled = true;
+    const email = String(d.get("email") || f.dataset.email || "").trim().toLowerCase();
+    try {
+      if (f.dataset.acceso === "mail") {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return decir("Revisá el mail.");
+        const problema = await pedirCodigo(email);
+        if (problema) return decir(problema);
+        pantallaCodigo(email);
+        return;
+      }
+      if (f.dataset.acceso === "primer") {
+        const nombre = String(d.get("nombre") || "").trim();
+        if (!nombre || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return decir("Completá tu nombre y tu mail.");
+        try { await funcion("primer_admin", { nombre, email }); } catch (e) { return decir(e.mensaje || "No se pudo crear la cuenta."); }
+        const problema = await pedirCodigo(email);
+        if (problema) return decir(problema);
+        pantallaCodigo(email);
+        return;
+      }
+      if (f.dataset.acceso === "codigo") {
+        const codigo = String(d.get("codigo") || "").replace(/\D/g, "");
+        if (codigo.length !== LARGO) return decir(`El código tiene ${LARGO} números.`);
+        const { data, error } = await sb.auth.verifyOtp({ email, token: codigo, type: "email" });
+        if (error || !data?.session) {
+          const m = String(error?.message || "");
+          return decir(/banned/i.test(m) ? "Esta cuenta no tiene acceso al taller." : "El código no es correcto o ya venció. Revisalo, o pedí otro.");
+        }
+        await continuar(data.session);
+      }
+    } catch (e) {
+      console.error(e);
+      decir("No se pudo; revisá tu conexión y probá de nuevo.");
+    }
+  }, true);
+
+  sb.auth.onAuthStateChange((evento, sesion) => {
+    if (evento === "SIGNED_OUT" && W.yo) location.replace(direccion());
+    // Si alguien entró con el link del mail (en vez del código), sigue igual
+    if (evento === "SIGNED_IN" && sesion && !W.sesion && document.getElementById("acceso")) setTimeout(() => continuar(sesion), 0);
+  });
+
+  async function arrancar() {
+    esperando();
+    let sesion = null;
+    try { ({ data: { session: sesion } } = await sb.auth.getSession()); } catch (_) { /* sin sesión */ }
+    if (location.hash.includes("access_token") || location.hash.includes("error")) history.replaceState(null, "", direccion() + location.search);
+    if (!sesion) { pantallaEntrar(); return; }
+    await continuar(sesion);
+  }
+  document.body.classList.add("con-acceso");
+  arrancar();
+})();
+</script>
+
+<script>
+(() => {
+  const TEMPORADAS = ["Invierno", "Verano", "Otoño", "Primavera", "Todo el año"];
+  const ESTADO = { propuesta: "Para revisar", guardada: "Aceptado", descartada: "Rechazado" };
+  const TIPOS_MANUAL = { gusta: "Le gusta", no: "No le gusta", regla: "Regla" };
+  const ETIQUETA = {
+    subida: "Modelo subido", propuesta: "Versión nueva", guardada: "Aceptado", descartada: "Rechazado",
+    revisar: "Vuelve a revisión", pedido: "Pedido de versión", pedido_hecho: "Pedido dibujado", gusto: "Cerebro",
+    ideas: "Ideas de Claude", nota: "Nota"
+  };
+  const S = {
+    proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [],
+    listos: new Set(), tab: "taller", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
+    db: null, assets: null, user: null, sample: null, downloads: null, yo: "", puede: null, nombres: {}, cargaFallo: false
+  };
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const foto = (id) => (!id ? "" : window.tallerFoto ? window.tallerFoto(id) : "/_blob/" + encodeURIComponent(id));
+  const ahora = () => new Date().toISOString();
+  const fecha = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return isNaN(d) ? "" : d.toLocaleDateString("es-AR", { day: "numeric", month: "short" });
+  };
+  const porFecha = (a, b) => String(b.creado || "").localeCompare(String(a.creado || ""));
+  const proyecto = (id) => S.proyectos.find((p) => p.id === id);
+  const version = (id) => S.versiones.find((v) => v.id === id);
+  const quien = (id) => {
+    if (!id) return "";
+    if (id === "claude") return "Claude";
+    if (id === "chat") return "Joaquín, por chat";
+    return S.nombres[id] || "Alguien del equipo";
+  };
+  const persona = (id) => (id ? `<span data-uid="${esc(id)}">${esc(quien(id))}</span>` : "");
+  const claseTemp = (t) => (String(t || "").toLowerCase().startsWith("invierno") ? "invierno" : String(t || "").toLowerCase().startsWith("verano") ? "verano" : "");
+  const escribe = () => !!S.db && S.puede !== false;
+  const proyectosOrdenados = () => [...S.proyectos].sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99) || porFecha(a, b));
+  const ordenVersiones = (a, b) => (b.ronda || 0) - (a.ronda || 0) || porFecha(a, b);
+
+  // El cerebro: lo que se explicó al aceptar o rechazar cada diseño, más lo anotado a mano.
+  function cerebro() {
+    const deDiseno = (estado) => S.versiones.filter((v) => v.estado === estado && v.motivo).sort((a, b) => String(b.decidido || b.creado || "").localeCompare(String(a.decidido || a.creado || "")));
+    const manual = (tipo) => S.gusto.filter((g) => g.tipo === tipo).sort(porFecha);
+    return { si: deDiseno("guardada"), no: deDiseno("descartada"), siManual: manual("gusta"), noManual: manual("no"), reglas: manual("regla") };
+  }
+
+  let tMsg;
+  function avisar(texto) {
+    const m = $("#mensaje");
+    m.textContent = texto;
+    m.classList.add("visible");
+    clearTimeout(tMsg);
+    tMsg = setTimeout(() => m.classList.remove("visible"), 3200);
+  }
+
+  // ---------- Dibujo ----------
+  let pendiente = false;
+  function render() {
+    if (pendiente) return;
+    pendiente = true;
+    setTimeout(() => { pendiente = false; dibujar(); }, 16);
+  }
+
+  function dibujar() {
+    document.body.dataset.seccion = S.tab;
+    document.querySelectorAll(".menu button[data-tab]").forEach((b) => {
+      if (b.dataset.tab === S.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    const pend = S.pedidos.filter((p) => p.estado !== "hecho").length;
+    const nP = $("#nPedidos"); nP.textContent = pend; nP.classList.toggle("oculto", !pend);
+    const rev = S.versiones.filter((v) => v.estado === "propuesta").length;
+    const nR = $("#nRevisar"); nR.textContent = rev; nR.classList.toggle("oculto", !rev);
+    $("#botonSubir").classList.toggle("oculto", !(S.assets && escribe()));
+    const web = window.tallerWeb;
+    $("#menuEquipo").classList.toggle("oculto", !web?.esAdmin());
+    $("#cuenta").classList.toggle("oculto", !web?.yo());
+    if (web?.yo()) $("#cuentaNombre").textContent = web.yo().nombre;
+    if (S.tab === "equipo" && !web?.esAdmin()) S.tab = "taller";
+    dibujarModelos();
+    const vista = $("#vista");
+    if (!S.db) {
+      vista.innerHTML = S.cargaFallo
+        ? (web
+          ? `<div class="aviso"><strong>No se pudo abrir la base del taller.</strong> Revisá tu conexión y recargá la página.</div>`
+          : `<div class="aviso"><strong>No se pudo abrir la base del taller.</strong> Abrí esta página desde claude.ai con tu sesión iniciada para ver los modelos, los diseños y el historial.</div>`)
+        : `<div class="aviso">Cargando el taller…</div>`;
+      return;
+    }
+    if (S.listos.size < 6) { vista.innerHTML = `<div class="aviso">Cargando el taller…</div>`; return; }
+    vista.innerHTML = S.tab === "historial" ? vHistorial() : S.tab === "cerebro" ? vCerebro() : S.tab === "pedidos" ? vPedidos() : S.tab === "equipo" ? vEquipo() : vTaller();
+    resolverNombres();
+  }
+
+  function dibujarModelos() {
+    const ps = proyectosOrdenados();
+    if (!S.sel || !proyecto(S.sel)) S.sel = ps[0]?.id || null;
+    $("#listaModelos").innerHTML = ps.map((p) => {
+      const r = S.versiones.filter((v) => v.proyecto === p.id && v.estado === "propuesta").length;
+      const prod = S.pedidos.filter((x) => x.proyecto === p.id && x.estado !== "hecho").length;
+      return `<button class="modelo" data-accion="elegir" data-id="${esc(p.id)}" aria-current="${S.tab === "taller" && p.id === S.sel}">
+        ${p.original ? `<img src="${foto(p.original)}" alt="" loading="lazy">` : `<div class="sinfoto"></div>`}
+        <span><b>${esc(p.nombre)}</b><small>${r ? `${r} para revisar` : "Todo revisado"}${prod ? ` · ${prod} en producción` : ""}</small></span>
+      </button>`;
+    }).join("") || (S.listos.size >= 6 ? `<p class="estado" style="padding:0 10px">Todavía no hay modelos.</p>` : "");
+  }
+
+  function vTaller() {
+    const p = proyecto(S.sel);
+    if (!p) return `<div class="cabeza"><h1>Taller</h1><p>Subí la foto de una cartera para empezar a transformarla al estilo Santesteban.</p></div>
+      ${S.assets && escribe() ? `<button class="btn prim" data-accion="nuevoModelo">Subir un modelo</button>` : `<div class="aviso">Para subir modelos hace falta permiso de edición en esta página.</div>`}`;
+    const vs = S.versiones.filter((v) => v.proyecto === p.id).sort(ordenVersiones);
+    const cuenta = { propuesta: 0, guardada: 0, descartada: 0, todas: vs.length };
+    vs.forEach((v) => { if (cuenta[v.estado] !== undefined) cuenta[v.estado]++; });
+    const filtradas = vs.filter((v) => S.filtro === "todas" || v.estado === S.filtro);
+    const pedidosP = S.pedidos.filter((x) => x.proyecto === p.id && x.estado !== "hecho").sort(porFecha);
+    const enProduccion = S.filtro === "propuesta" || S.filtro === "todas" ? pedidosP.map((x) => {
+      const base = x.version ? version(x.version) : null;
+      const img = base?.imagen || p.original;
+      return `<button class="tarjeta en-produccion" data-accion="verPedido" data-id="${esc(x.id)}">
+        <div class="foto">${img ? `<img src="${foto(img)}" alt="" loading="lazy">` : ""}<span class="sello">En producción<small>${x.estado === "en_proceso" ? "Claude lo está dibujando" : "Esperando a Claude"}</small></span></div>
+        <div class="texto"><b>${esc(x.texto)}</b><p>Pedido el ${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}</p></div>
+      </button>`;
+    }).join("") : "";
+    const ideas = S.ideas.filter((i) => i.proyecto === p.id).sort(porFecha);
+    const botones = escribe() ? `
+      <button class="btn prim" data-accion="pedirVersiones">Pedir versiones nuevas</button>
+      ${S.sample ? `<button class="btn" data-accion="ideas">Ideas escritas con Claude</button>` : ""}
+      <button class="btn" data-accion="editarModelo">Editar datos</button>` : "";
+    const filtro = (k, t) => `<button data-accion="filtro" data-f="${k}" aria-pressed="${S.filtro === k}">${t} · ${cuenta[k]}</button>`;
+    const tarjetas = filtradas.map((v) => `
+      <button class="tarjeta ${esc(v.estado)}" data-accion="abrir" data-id="${esc(v.id)}">
+        <div class="foto">${v.imagen ? `<img src="${foto(v.imagen)}" alt="${esc(v.nombre)}" loading="lazy" decoding="async">` : ""}</div>
+        <div class="texto"><b>${esc(v.nombre)}</b><p>${esc(v.estado !== "propuesta" && v.motivo ? v.motivo : v.descripcion || "")}</p>
+          <div class="fila"><span class="chip ${esc(v.estado)}">${esc(ESTADO[v.estado] || v.estado)}</span>${v.ronda ? `<span class="chip">Ronda ${esc(v.ronda)}</span>` : ""}</div>
+        </div>
+      </button>`).join("");
+    const vacio = S.filtro === "propuesta"
+      ? `<div class="vacio">No hay diseños para revisar.${pedidosP.length ? ` Hay ${pedidosP.length} pedido${pedidosP.length > 1 ? "s" : ""} esperando que Claude los dibuje.` : ""}</div>`
+      : `<div class="vacio">No hay diseños en esta lista.</div>`;
+    return `
+      <div class="ficha">
+        <button class="original" data-accion="verOriginal" aria-label="Ver el modelo original">${p.original ? `<img src="${foto(p.original)}" alt="Modelo original">` : ""}</button>
+        <div>
+          <div class="fila"><span class="chip ${claseTemp(p.temporada)}">${esc(p.temporada || "Sin temporada")}</span>${pedidosP.length ? `<span class="chip pendiente">${pedidosP.length} en producción</span>` : ""}</div>
+          <h1>${esc(p.nombre)}</h1>
+          <dl>
+            <dt>Se conserva</dt><dd>${esc(p.conservar || "Solo la forma y el tamaño")}</dd>
+            ${p.notas ? `<dt>Notas</dt><dd>${esc(p.notas)}</dd>` : ""}
+            <dt>Subido</dt><dd>${esc(fecha(p.creado))}${p.creadoPor ? ` · ${persona(p.creadoPor)}` : ""}</dd>
+          </dl>
+          <div class="acciones">${botones}</div>
+        </div>
+      </div>
+      <div class="filtros" role="group" aria-label="Filtrar diseños">${filtro("propuesta", "Para revisar")}${filtro("guardada", "Aceptados")}${filtro("descartada", "Rechazados")}${filtro("todas", "Todos")}</div>
+      ${filtradas.length || enProduccion ? `<div class="grilla">${enProduccion}${tarjetas}</div>` : vacio}
+      <div id="zonaIdeas">${ideas.length ? vIdeas(ideas) : ""}</div>`;
+  }
+
+  function vIdeas(ideas) {
+    return `<div class="seccion"><span class="etiqueta">Ideas escritas con Claude</span><div class="ideas">${ideas.map((i) => `
+      <div class="idea"><b>${esc(i.nombre)}</b><p>${esc(i.idea)}</p>
+        ${i.materiales?.length ? `<small>${esc(i.materiales.join(" · "))}</small>` : ""}
+        ${i.por_que ? `<small><em>${esc(i.por_que)}</em></small>` : ""}
+        ${escribe() ? `<div class="fila"><button class="btn chico" data-accion="ideaAPedido" data-id="${esc(i.id)}">Pedir que la dibuje</button><button class="quitar" title="Borrar idea" aria-label="Borrar idea" data-accion="borrarIdea" data-id="${esc(i.id)}">×</button></div>` : ""}
+      </div>`).join("")}</div></div>`;
+  }
+
+  function vHistorial() {
+    const ps = proyectosOrdenados();
+    const todas = S.versiones.filter((v) => !S.hModelo || v.proyecto === S.hModelo);
+    const n = { propuesta: 0, guardada: 0, descartada: 0 };
+    todas.forEach((v) => { if (n[v.estado] !== undefined) n[v.estado]++; });
+    const opciones = `<option value="">Todos los modelos</option>` + ps.map((p) => `<option value="${esc(p.id)}" ${p.id === S.hModelo ? "selected" : ""}>${esc(p.nombre)}</option>`).join("");
+    const chip = (k, t) => `<button data-accion="hEstado" data-f="${k}" aria-pressed="${S.hEstado === k}">${t}</button>`;
+    const cabeza = `<div class="cabeza"><h1>Historial</h1><p>Cada diseño con su estado. Al aceptar o rechazar uno, se escribe por qué: esa explicación pasa sola al cerebro de la diseñadora.</p></div>
+      <div class="resumen">
+        <div class="dato pe"><b>${n.propuesta}</b><span>para revisar</span></div>
+        <div class="dato ok"><b>${n.guardada}</b><span>aceptados</span></div>
+        <div class="dato no"><b>${n.descartada}</b><span>rechazados</span></div>
+      </div>
+      <div class="filtros">
+        <div class="vistas" role="group" aria-label="Qué ver"><button data-accion="hVista" data-f="disenos" aria-pressed="${S.hVista === "disenos"}">Diseños</button><button data-accion="hVista" data-f="movimientos" aria-pressed="${S.hVista === "movimientos"}">Movimientos</button></div>
+        <select data-accion="hModelo" aria-label="Filtrar por modelo">${opciones}</select>
+        ${S.hVista === "disenos" ? chip("todos", "Todos") + chip("propuesta", "Para revisar") + chip("guardada", "Aceptados") + chip("descartada", "Rechazados") : ""}
+      </div>`;
+    if (S.hVista === "movimientos") return cabeza + vMovimientos();
+    const grupos = ps.filter((p) => !S.hModelo || p.id === S.hModelo).map((p) => {
+      const vs = S.versiones.filter((v) => v.proyecto === p.id && (S.hEstado === "todos" || v.estado === S.hEstado)).sort(ordenVersiones);
+      if (!vs.length) return "";
+      return `<section class="grupo"><h2>${p.original ? `<img src="${foto(p.original)}" alt="">` : ""}${esc(p.nombre)} <small>${vs.length} diseño${vs.length === 1 ? "" : "s"}</small></h2>
+        <div class="registros">${vs.map(registro).join("")}</div></section>`;
+    }).join("");
+    return cabeza + (grupos || `<div class="vacio" style="margin-top:20px">No hay diseños con ese filtro.</div>`);
+  }
+
+  function registro(v) {
+    const decidido = v.estado !== "propuesta";
+    const porque = decidido
+      ? (v.motivo ? `<p class="porque"><em>${v.estado === "guardada" ? "Por qué sí:" : "Por qué no:"}</em> ${esc(v.motivo)}</p>` : `<p class="porque" style="color:var(--mu)">Falta escribir por qué.</p>`)
+      : `<p class="porque" style="color:var(--mu)">Todavía sin decidir.</p>`;
+    const cuando = decidido && v.decidido ? `<small>${esc(ESTADO[v.estado])} el ${esc(fecha(v.decidido))}${v.decidioPor ? ` · ${persona(v.decidioPor)}` : ""}</small>`
+      : `<small>Propuesto el ${esc(fecha(v.creado))}${v.autor ? ` · ${persona(v.autor)}` : ""}</small>`;
+    const acciones = !escribe() ? "" : decidido
+      ? `<div class="acciones"><button class="btn chico" data-accion="decidir" data-id="${esc(v.id)}" data-estado="${esc(v.estado)}">Cambiar o explicar</button></div>`
+      : `<div class="acciones"><button class="btn chico ok" data-accion="decidir" data-id="${esc(v.id)}" data-estado="guardada">Aceptar</button><button class="btn chico no" data-accion="decidir" data-id="${esc(v.id)}" data-estado="descartada">Rechazar</button></div>`;
+    return `<article class="registro ${esc(v.estado)}">
+      <button class="foto" data-accion="abrir" data-id="${esc(v.id)}" aria-label="Ver ${esc(v.nombre)}">${v.imagen ? `<img src="${foto(v.imagen)}" alt="" loading="lazy">` : ""}</button>
+      <div><div class="fila"><b>${esc(v.nombre)}</b><span class="chip ${esc(v.estado)}">${esc(ESTADO[v.estado] || v.estado)}</span>${v.ronda ? `<span class="chip">Ronda ${esc(v.ronda)}</span>` : ""}</div>
+        ${porque}${cuando}</div>
+      ${acciones}
+    </article>`;
+  }
+
+  function vMovimientos() {
+    const ev = S.historial.filter((e) => !S.hModelo || e.proyecto === S.hModelo).sort(porFecha);
+    const filas = ev.map((e) => {
+      const v = e.version ? version(e.version) : null;
+      const p = proyecto(e.proyecto);
+      const img = v?.imagen || (e.tipo === "subida" ? p?.original : "");
+      return `<div class="evento">
+        <time datetime="${esc(e.creado)}">${esc(fecha(e.creado))}</time>
+        <div class="que"><div class="fila"><span class="chip ${esc(e.tipo === "pedido" ? "pendiente" : e.tipo)}">${esc(ETIQUETA[e.tipo] || e.tipo)}</span>${p ? `<span class="chip">${esc(p.nombre)}</span>` : ""}</div>
+          <span>${v ? `<b>${esc(v.nombre)}</b>${e.texto ? ": " : ""}` : ""}${esc(e.texto || "")}</span>
+          ${e.quien ? `<span class="quien">${persona(e.quien)}</span>` : ""}</div>
+        ${img ? `<img src="${foto(img)}" alt="" loading="lazy" ${v ? `data-accion="abrir" data-id="${esc(v.id)}"` : ""}>` : `<span></span>`}
+      </div>`;
+    }).join("");
+    return ev.length ? `<div class="linea">${filas}</div>` : `<div class="vacio">Todavía no hay movimientos.</div>`;
+  }
+
+  function vCerebro() {
+    const c = cerebro();
+    const item = (v) => {
+      const p = proyecto(v.proyecto);
+      return `<li><span>${esc(v.motivo)}</span><span></span>
+        <span class="prueba">${v.imagen ? `<img src="${foto(v.imagen)}" alt="" data-accion="abrir" data-id="${esc(v.id)}">` : ""}<span>De <a data-accion="abrir" data-id="${esc(v.id)}">${esc(v.nombre)}</a>${p ? ` · ${esc(p.nombre)}` : ""}${v.decidido ? ` · ${esc(fecha(v.decidido))}` : ""}</span></span></li>`;
+    };
+    const manual = (g) => `<li><span>${esc(g.texto)}</span>${escribe() ? `<button class="quitar" data-accion="borrarGusto" data-id="${esc(g.id)}" aria-label="Quitar" title="Quitar">×</button>` : "<span></span>"}
+      <span class="prueba"><span>Anotado a mano · ${esc(fecha(g.creado))}${g.quien ? ` · ${persona(g.quien)}` : ""}</span></span></li>`;
+    const vacio = (t) => `<li><span style="color:var(--mu)">${t}</span></li>`;
+    const agregar = escribe() ? `<form class="agregar" data-form="gusto">
+        <select name="tipo" aria-label="Tipo">${Object.entries(TIPOS_MANUAL).map(([k, t]) => `<option value="${k}">${t}</option>`).join("")}</select>
+        <input type="text" name="texto" placeholder="Ej.: prefiere herrajes en dorado envejecido" aria-label="Qué anotar" required maxlength="300">
+        <button class="btn prim" type="submit">Anotar</button></form>` : "";
+    return `<div class="cabeza"><h1>Cerebro de la diseñadora</h1><p>Lo que fuimos aprendiendo de su gusto. Se actualiza solo con cada diseño aceptado o rechazado en el Historial, y se puede sumar algo a mano. Claude lo lee antes de dibujar cada versión nueva.</p></div>
+      <div class="cerebro">
+        <div class="columna si"><h3>Le gusta <small>${c.si.length + c.siManual.length}</small></h3><p>De los diseños aceptados</p><ul>${c.si.map(item).join("")}${c.siManual.map(manual).join("")}${!c.si.length && !c.siManual.length ? vacio("Todavía nada.") : ""}</ul></div>
+        <div class="columna no"><h3>No le gusta <small>${c.no.length + c.noManual.length}</small></h3><p>De los diseños rechazados</p><ul>${c.no.map(item).join("")}${c.noManual.map(manual).join("")}${!c.no.length && !c.noManual.length ? vacio("Todavía nada.") : ""}</ul></div>
+        <div class="columna reglas"><h3>Reglas <small>${c.reglas.length}</small></h3><p>Criterios fijos para cualquier modelo</p><ul>${c.reglas.map(manual).join("") || vacio("Todavía nada.")}</ul></div>
+      </div>
+      ${agregar}
+      <p class="estado" style="margin-top:12px">Para corregir algo que vino de un diseño, cambiá su explicación en el Historial.</p>`;
+  }
+
+  function vPedidos() {
+    const fila = (x) => {
+      const p = proyecto(x.proyecto);
+      const v = x.version ? version(x.version) : null;
+      const img = v?.imagen || p?.original;
+      const hechos = (x.resultado || []).map((id) => version(id)).filter(Boolean);
+      return `<div class="pedido">${img ? `<img src="${foto(img)}" alt="" loading="lazy">` : `<div class="sinfoto"></div>`}
+        <div><div class="fila"><span class="chip ${x.estado === "hecho" ? "guardada" : "pendiente"}">${x.estado === "hecho" ? "Dibujado" : x.estado === "en_proceso" ? "Claude lo está dibujando" : "Esperando a Claude"}</span>${p ? `<span class="chip">${esc(p.nombre)}</span>` : ""}${v ? `<span class="chip">sobre ${esc(v.nombre)}</span>` : ""}</div>
+          <p>${esc(x.texto)}</p>
+          ${x.estado === "en_proceso" ? `<p class="estado">Claude ya lo está dibujando. Cuando termine, las versiones aparecen en el Taller, en «Para revisar».</p>` : x.estado !== "hecho" ? `<p class="estado">Todavía no empezó: se dibuja cuando Joaquín le escribe a Claude «hay pedidos en el taller».</p>` : ""}
+          <small class="quien">${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}${hechos.length ? ` · Claude subió: ${hechos.map((h) => esc(h.nombre)).join(", ")}` : ""}</small></div>
+        <div class="acciones">${p ? `<button class="btn chico" data-accion="irAModelo" data-id="${esc(p.id)}">Ver modelo</button>` : ""}${escribe() && x.estado !== "hecho" ? `<button class="quitar" data-accion="borrarPedido" data-id="${esc(x.id)}" aria-label="Cancelar pedido" title="Cancelar pedido">×</button>` : ""}</div></div>`;
+    };
+    const pend = S.pedidos.filter((x) => x.estado !== "hecho").sort(porFecha);
+    const hechos = S.pedidos.filter((x) => x.estado === "hecho").sort(porFecha);
+    const ps = proyectosOrdenados();
+    const nuevo = escribe() && ps.length ? `<form class="nuevo-pedido" data-form="pedidoLibre">
+        <select name="proyecto" aria-label="Modelo">${ps.map((p) => `<option value="${esc(p.id)}" ${p.id === S.sel ? "selected" : ""}>${esc(p.nombre)}</option>`).join("")}</select>
+        <textarea name="texto" required maxlength="800" aria-label="Qué querés que dibuje" placeholder="Ej.: la Tote en bordó, con la franja de chaguar más angosta"></textarea>
+        <button class="btn prim" type="submit">Pedir</button></form>` : "";
+    return `<div class="cabeza"><h1>Pedidos de versiones</h1><p>La lista de diseños nuevos que el equipo le pide a Claude. La página no puede dibujar carteras sola: anota el pedido y Claude lo dibuja.</p></div>
+      <div class="pasos">
+        <div class="paso"><span class="num">1</span><b>Se pide</b><p>Con «Pedir un cambio» en un diseño, «Pedir versiones nuevas» en un modelo, o acá abajo.</p></div>
+        <div class="paso"><span class="num">2</span><b>Queda anotado</b><p>Aparece en esta lista como «esperando a Claude», con el modelo y lo que se pidió. La página no lo dibuja sola.</p></div>
+        <div class="paso"><span class="num">3</span><b>Claude lo dibuja</b><p>Joaquín le escribe a Claude «hay pedidos en el taller». Mientras trabaja, el pedido dice «Claude lo está dibujando»; al terminar, las versiones aparecen en el Taller, en «Para revisar».</p></div>
+      </div>
+      ${nuevo}
+      <div class="seccion"><span class="etiqueta">Pendientes · ${pend.length}</span>${pend.length ? `<div class="lista">${pend.map(fila).join("")}</div>` : `<div class="vacio">No hay pedidos esperando.</div>`}</div>
+      <div class="seccion"><span class="etiqueta">Dibujados · ${hechos.length}</span>${hechos.length ? `<div class="lista">${hechos.map(fila).join("")}</div>` : `<div class="vacio">Todavía no hay pedidos dibujados.</div>`}</div>`;
+  }
+
+  // ---------- Equipo (solo en la versión web, para quien administra) ----------
+  const ROLES = { admin: "Administración", diseno: "Diseño", lectura: "Solo mirar" };
+  const ROLES_AYUDA = { admin: "usa todo el taller y suma personas", diseno: "usa todo el taller", lectura: "ve el taller, no cambia nada" };
+  function vEquipo() {
+    const web = window.tallerWeb;
+    const yo = web.yo();
+    const ms = web.miembros().sort((a, b) => (b.activo - a.activo) || a.nombre.localeCompare(b.nombre, "es"));
+    const opciones = (rol) => Object.entries(ROLES).map(([k, t]) => `<option value="${k}"${k === rol ? " selected" : ""}>${esc(t)}: ${esc(ROLES_AYUDA[k])}</option>`).join("");
+    const fila = (m) => {
+      const esYo = m.email === yo?.email;
+      const estado = !m.activo ? "Sin acceso" : m.ultimo_ingreso ? `Entró por última vez el ${fecha(m.ultimo_ingreso)}` : "Todavía no entró";
+      return `<li class="${m.activo ? "" : "inactivo"}">
+        <div><b>${esc(m.nombre)}</b><small>${esc(m.email)}</small></div>
+        <div class="rol">${esYo ? `<span>${esc(ROLES[m.rol] || m.rol)}</span>` : `<select data-rol="${esc(m.email)}" aria-label="Qué puede hacer ${esc(m.nombre)}"${m.activo ? "" : " disabled"}>${opciones(m.rol)}</select>`}<small>${esYo ? "Sos vos" : esc(estado)}</small></div>
+        <div class="fila">${esYo ? "" : m.activo
+          ? `<button class="btn chico" data-accion="avisoEquipo" data-id="${esc(m.email)}">Mensaje para avisarle</button><button class="btn chico no" data-accion="quitarAcceso" data-id="${esc(m.email)}">Quitar acceso</button>`
+          : `<button class="btn chico" data-accion="devolverAcceso" data-id="${esc(m.email)}">Devolver acceso</button>`}</div>
+      </li>`;
+    };
+    return `<div>
+      <header class="cabeza"><h1>Equipo</h1><p>Quién puede entrar al taller. Nadie usa contraseña: cada persona entra con su mail y un código que le llega por correo. Para sumar a alguien, cargá su nombre y su mail, y avisale que ya puede entrar.</p></header>
+      <section class="seccion"><span class="etiqueta">Personas · ${ms.filter((m) => m.activo).length}</span><ul class="equipo">${ms.map(fila).join("")}</ul></section>
+      <section class="seccion"><span class="etiqueta">Sumar a alguien</span>
+        <form class="sumar" data-form="sumar">
+          <label>Nombre<input type="text" name="nombre" required maxlength="80" autocomplete="off"></label>
+          <label>Mail<input type="email" name="email" required maxlength="200" autocomplete="off"></label>
+          <label>Qué puede hacer<select name="rol">${opciones("diseno")}</select></label>
+          <button class="btn prim" type="submit">Sumar al equipo</button>
+        </form>
+      </section>
+    </div>`;
+  }
+  // Mensaje listo para mandar por WhatsApp o por mail
+  function mostrarAviso(m, recien) {
+    const texto = `Hola ${m.nombre.split(" ")[0]}! Ya tenés acceso al taller de diseño de Santesteban: ${window.tallerWeb.direccion()}\nEntrá con tu mail (${m.email}) y te llega un código para entrar. No hace falta contraseña.`;
+    abrirVentana(`<div class="formulario">
+      <h2>${recien ? `Listo: ${esc(m.nombre)} ya puede entrar` : `Avisale a ${esc(m.nombre)}`}</h2>
+      <p>Mandale este mensaje por WhatsApp o por mail.</p>
+      <textarea class="link-copiar" readonly rows="4" aria-label="Mensaje">${esc(texto)}</textarea>
+      <div class="fila"><button class="btn prim" data-accion="copiarAviso">Copiar mensaje</button><button class="btn" data-accion="cerrar">Listo</button></div>
+    </div>`, true);
+  }
+
+  // ---------- Ventanas ----------
+  let ultimoFoco = null;
+  function abrirVentana(html, chica = false) {
+    if (!$("#velo").classList.contains("abierto")) ultimoFoco = document.activeElement;
+    const w = $("#ventana");
+    w.className = "ventana" + (chica ? " chica" : "");
+    w.innerHTML = `<button class="cerrar" data-accion="cerrar" aria-label="Cerrar">×</button>` + html;
+    $("#velo").classList.add("abierto");
+    setTimeout(() => (w.querySelector("textarea, input[type='text'], select") || w.querySelector(".cerrar")).focus(), 30);
+  }
+  function cerrarVentana() {
+    $("#velo").classList.remove("abierto");
+    $("#ventana").innerHTML = "";
+    ultimoFoco?.focus?.();
+  }
+
+  function linaje(v) {
+    const cadena = [];
+    let p = v.padre ? version(v.padre) : null;
+    const vistos = new Set();
+    while (p && !vistos.has(p.id) && cadena.length < 6) { vistos.add(p.id); cadena.push(p); p = p.padre ? version(p.padre) : null; }
+    const hijas = S.versiones.filter((x) => x.padre === v.id);
+    const link = (x) => `<a data-accion="abrir" data-id="${esc(x.id)}">${esc(x.nombre)}</a>`;
+    let t = "";
+    if (cadena.length) t += `Viene de ${cadena.map(link).join(" ← ")}. `;
+    if (hijas.length) t += `Salieron de acá: ${hijas.map(link).join(", ")}.`;
+    return t;
+  }
+
+  function abrirVersion(id) {
+    const v = version(id);
+    if (!v) return;
+    const p = proyecto(v.proyecto);
+    const decidido = v.estado !== "propuesta";
+    const acciones = escribe() ? `<div class="acciones">
+        ${decidido ? `<button class="btn" data-accion="decidir" data-id="${esc(v.id)}" data-estado="${esc(v.estado)}">Cambiar o explicar</button>`
+          : `<button class="btn ok" data-accion="decidir" data-id="${esc(v.id)}" data-estado="guardada">Aceptar</button><button class="btn no" data-accion="decidir" data-id="${esc(v.id)}" data-estado="descartada">Rechazar</button>`}
+        <button class="btn" data-accion="cambio" data-id="${esc(v.id)}">Pedir un cambio</button>
+        ${S.downloads ? `<button class="btn" data-accion="descargar" data-id="${esc(v.id)}">Descargar</button>` : ""}
+      </div>` : (S.downloads ? `<div class="acciones"><button class="btn" data-accion="descargar" data-id="${esc(v.id)}">Descargar</button></div>` : "");
+    const lin = linaje(v);
+    abrirVentana(`<div class="detalle" data-version="${esc(v.id)}">
+      <div class="imagenes">
+        <img id="imgDetalle" src="${foto(v.imagen)}" alt="${esc(v.nombre)}">
+        ${p?.original ? `<div class="conmutador" role="group" aria-label="Qué imagen ver"><button data-accion="verImg" data-cual="version" aria-pressed="true">Diseño</button><button data-accion="verImg" data-cual="original" aria-pressed="false">Original</button></div>` : ""}
+      </div>
+      <div class="info">
+        <div class="fila"><span class="chip ${esc(v.estado)}">${esc(ESTADO[v.estado] || v.estado)}</span>${v.ronda ? `<span class="chip">Ronda ${esc(v.ronda)}</span>` : ""}${v.temporada ? `<span class="chip ${claseTemp(v.temporada)}">${esc(v.temporada)}</span>` : ""}</div>
+        <h2>${esc(v.nombre)}</h2>
+        ${v.descripcion ? `<p class="desc">${esc(v.descripcion)}</p>` : ""}
+        ${v.materiales?.length ? `<div class="fila">${v.materiales.map((m) => `<span class="chip">${esc(m)}</span>`).join("")}</div>` : ""}
+        ${decidido && v.motivo ? `<p class="estado"><b>${v.estado === "descartada" ? "Por qué no" : "Por qué sí"}:</b> ${esc(v.motivo)}</p>` : ""}
+        ${lin ? `<p class="linaje">${lin}</p>` : ""}
+        <p class="estado">${esc(p?.nombre || "")} · ${esc(fecha(v.creado))}${v.autor ? ` · ${persona(v.autor)}` : ""}</p>
+        ${acciones}
+      </div></div>`);
+    resolverNombres();
+  }
+
+  function abrirDecision(id, estado) {
+    const v = version(id);
+    if (!v) return;
+    const p = proyecto(v.proyecto);
+    const decidido = v.estado !== "propuesta";
+    abrirVentana(`<form class="formulario" data-form="decidir" data-id="${esc(v.id)}">
+      <div class="quien-decide">${v.imagen ? `<img src="${foto(v.imagen)}" alt="">` : "<span></span>"}<div><h2>${esc(v.nombre)}</h2><p>${esc(p?.nombre || "")}${v.ronda ? ` · ronda ${esc(v.ronda)}` : ""}</p></div></div>
+      <div class="eleccion" role="radiogroup" aria-label="Decisión">
+        <label class="opcion si"><input type="radio" name="estado" value="guardada" ${estado === "guardada" ? "checked" : ""} required> Aceptado</label>
+        <label class="opcion no"><input type="radio" name="estado" value="descartada" ${estado === "descartada" ? "checked" : ""}> Rechazado</label>
+      </div>
+      <label><span id="etqPorque">${estado === "descartada" ? "¿Por qué no?" : "¿Por qué sí?"}</span><textarea name="texto" required maxlength="600" placeholder="${estado === "descartada" ? "Ej.: el herraje queda pegado encima, no se integra" : "Ej.: el chaguar queda integrado a la cartera"}">${esc(decidido ? v.motivo || "" : "")}</textarea></label>
+      <p>Esta explicación pasa al cerebro de la diseñadora y Claude la tiene en cuenta en las próximas versiones.</p>
+      <div class="acciones"><button class="btn prim" type="submit">Guardar decisión</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button>
+        ${decidido && escribe() ? `<button class="btn" type="button" data-accion="volverARevisar" data-id="${esc(v.id)}">Volver a «para revisar»</button>` : ""}</div>
+    </form>`, true);
+  }
+
+  function abrirCambio(id) {
+    const v = version(id);
+    if (!v) return;
+    abrirVentana(`<form class="formulario" data-form="cambio" data-id="${esc(v.id)}">
+      <h2>Pedir un cambio</h2>
+      <p>Sobre «${esc(v.nombre)}». El pedido queda en «Pedidos de versiones» y Claude lo dibuja cuando Joaquín se lo pide en el chat.</p>
+      <label>¿Qué cambio querés?<textarea name="texto" required maxlength="800" placeholder="Ej.: la misma, pero con los dijes más grandes y en negro"></textarea></label>
+      <div class="acciones"><button class="btn prim" type="submit">Enviar pedido</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
+    </form>`, true);
+  }
+
+  function abrirPedido(id) {
+    const x = S.pedidos.find((y) => y.id === id);
+    if (!x) return;
+    const p = proyecto(x.proyecto);
+    const v = x.version ? version(x.version) : null;
+    const dibujando = x.estado === "en_proceso";
+    abrirVentana(`<div class="formulario">
+      <div class="fila"><span class="chip pendiente">${dibujando ? "Claude lo está dibujando" : "Esperando a Claude"}</span></div>
+      <h2>En producción</h2>
+      <p>${esc(p?.nombre || "")}${v ? ` · sobre ${esc(v.nombre)}` : ""} · pedido el ${esc(fecha(x.creado))}${x.quien ? ` · ${persona(x.quien)}` : ""}</p>
+      <p style="color:var(--tx);font-size:15px">${esc(x.texto)}</p>
+      <p>${dibujando ? "Claude ya lo está dibujando. Cuando termine, las versiones aparecen en este modelo, en «Para revisar»." : "Todavía no empezó: se dibuja cuando Joaquín le escribe a Claude «hay pedidos en el taller»."}</p>
+      <div class="acciones">${escribe() ? `<button class="btn" data-accion="borrarPedido" data-id="${esc(x.id)}">Cancelar pedido</button>` : ""}<button class="btn" data-accion="cerrar">Cerrar</button></div>
+    </div>`, true);
+    resolverNombres();
+  }
+
+  function formularioModelo(p) {
+    const nuevo = !p;
+    abrirVentana(`<form class="formulario" data-form="modelo" ${p ? `data-id="${esc(p.id)}"` : ""}>
+      <h2>${nuevo ? "Subir un modelo" : "Editar el modelo"}</h2>
+      <p>${nuevo ? "La foto de una cartera para transformarla al estilo Santesteban. Al subirla queda un pedido para que Claude dibuje las primeras versiones." : "Estos datos los usa Claude para las próximas versiones."}</p>
+      ${nuevo ? `<label>Foto de la cartera<input type="file" name="archivo" accept="image/*" required></label>` : ""}
+      <label>Nombre del modelo<input type="text" name="nombre" required maxlength="80" value="${esc(p?.nombre || "")}" placeholder="Ej.: Bandolera de flecos"></label>
+      <label>Temporada<select name="temporada">${TEMPORADAS.map((t) => `<option ${(p?.temporada || "Invierno") === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label>Qué se conserva del original<input type="text" name="conservar" maxlength="200" value="${esc(p?.conservar || "Solo la forma y el tamaño")}"></label>
+      <label>Notas para Claude (opcional)<textarea name="notas" maxlength="800" placeholder="Ej.: probar con asta y chaguar; nada de motivos de mar">${esc(p?.notas || "")}</textarea></label>
+      <div class="acciones"><button class="btn prim" type="submit">${nuevo ? "Subir y pedir versiones" : "Guardar cambios"}</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
+    </form>`, true);
+  }
+
+  function formularioPedido(p) {
+    abrirVentana(`<form class="formulario" data-form="pedido">
+      <h2>Pedir versiones nuevas</h2>
+      <p>Para «${esc(p.nombre)}». Queda en «Pedidos de versiones»; Claude lo dibuja siguiendo el cerebro de la diseñadora.</p>
+      <label>¿Qué querés ver?<textarea name="texto" required maxlength="800" placeholder="Ej.: dos versiones más en bordó, con asta clara y sin chaguar"></textarea></label>
+      <div class="acciones"><button class="btn prim" type="submit">Enviar pedido</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
+    </form>`, true);
+  }
+
+  // ---------- Escrituras ----------
+  async function evento(datos) {
+    await S.db.collection("historial").add({ creado: ahora(), quien: S.yo || "", ...datos });
+  }
+
+  async function pedir(proyectoId, versionId, texto) {
+    const ref = await S.db.collection("pedidos").add({ proyecto: proyectoId, version: versionId || "", texto, estado: "pendiente", creado: ahora(), quien: S.yo || "" });
+    await evento({ proyecto: proyectoId, version: versionId || "", tipo: "pedido", texto, pedido: ref.id });
+    avisar("Pedido anotado: Claude lo va a dibujar");
+  }
+
+  async function decidir(v, estado, texto) {
+    const t = (texto || "").trim();
+    if (!t) throw { mensaje: "Falta escribir por qué" };
+    const mismo = v.estado === estado;
+    await S.db.collection("versiones").doc(v.id).update({ estado, motivo: t, decidido: ahora(), decidioPor: S.yo || "" });
+    await evento({ proyecto: v.proyecto, version: v.id, tipo: mismo ? "nota" : estado, texto: mismo ? `Nueva explicación: ${t}` : t });
+    avisar(estado === "guardada" ? "Aceptado; ya está en el cerebro" : "Rechazado; ya está en el cerebro");
+  }
+
+  async function subirModelo(form) {
+    const datos = new FormData(form);
+    const archivo = datos.get("archivo");
+    if (!archivo || !archivo.size) throw { mensaje: "Falta la foto" };
+    const r = await S.assets.upload(archivo);
+    const temporada = datos.get("temporada");
+    const conservar = String(datos.get("conservar") || "").trim() || "Solo la forma y el tamaño";
+    const notas = String(datos.get("notas") || "").trim();
+    const nombre = String(datos.get("nombre")).trim();
+    const ref = await S.db.collection("proyectos").add({ nombre, original: r.id, temporada, conservar, notas, creado: ahora(), creadoPor: S.yo || "", orden: Date.now() });
+    await evento({ proyecto: ref.id, tipo: "subida", texto: `Se subió el modelo para ${String(temporada).toLowerCase()}.` });
+    await pedir(ref.id, "", `Primeras versiones de ${String(temporada).toLowerCase()} al estilo Santesteban. Conservar: ${conservar.toLowerCase()}.${notas ? " " + notas : ""}`);
+    S.sel = ref.id;
+    S.filtro = "propuesta";
+    S.tab = "taller";
+  }
+
+  async function pedirIdeas(p) {
+    const zona = $("#zonaIdeas");
+    if (zona) zona.innerHTML = `<div class="aviso" style="margin-top:24px">Claude está pensando ideas para «${esc(p.nombre)}»…</div>`;
+    const c = cerebro();
+    const lista = (arr) => arr.map((x) => "- " + x).join("\n") || "- (nada todavía)";
+    const prompt = `Sos asistente de diseño de Santesteban, marca argentina de carteras y cinturones de autor.
+Recursos propios de la marca: paños y franjas de chaguar tejido; asta (cierres, dijes, punteras); madera torneada o facetada; ónix; alpaca; coral; nácar; tiento (costura cruzada de cuero); trenzas de cuero; flecos y borlas; cueros suela, chocolate, negro y bordó; gamuza.
+
+Cerebro de la diseñadora (lo que aprendimos de su gusto):
+Le gusta:
+${lista([...c.si.map((v) => `${v.motivo} (diseño «${v.nombre}»)`), ...c.siManual.map((g) => g.texto)])}
+No le gusta:
+${lista([...c.no.map((v) => `${v.motivo} (diseño «${v.nombre}»)`), ...c.noManual.map((g) => g.texto)])}
+Reglas:
+${lista(c.reglas.map((g) => g.texto))}
+
+Modelo a transformar: «${p.nombre}». Temporada: ${p.temporada || "sin definir"}. Se conserva del original: ${p.conservar || "solo la forma y el tamaño"}. ${p.notas ? "Notas: " + p.notas : ""}
+La imagen adjunta (si hay) es la foto del modelo original.
+
+Proponé 3 versiones al estilo Santesteban para esa temporada. Los recursos de la marca tienen que ser parte de la construcción (un paño, una franja, un cierre, una costura), no un herraje pegado encima. La cartera no puede parecerse a la marca original más allá de la forma y el tamaño: nada de logos ni herrajes identificatorios.
+Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto, evocador, en español), "idea" (2 o 3 oraciones concretas: qué cambia y dónde), "materiales" (array de 2 a 5), "por_que" (una oración que lo conecte con el gusto de la diseñadora).`;
+    const opciones = { modelTier: "default" };
+    try {
+      const lim = await S.sample.limits().catch(() => null);
+      if (lim?.images && p.original) {
+        const blob = await fetch(foto(p.original)).then((r) => (r.ok ? r.blob() : null)).catch(() => null);
+        if (blob) opciones.images = [blob];
+      }
+      const res = await S.sample.json(prompt, opciones);
+      const ideas = Array.isArray(res) ? res : Array.isArray(res?.ideas) ? res.ideas : [];
+      if (!ideas.length) throw { message: "Claude no devolvió ideas" };
+      for (const i of ideas.slice(0, 5)) {
+        await S.db.collection("ideas").add({ proyecto: p.id, nombre: String(i.nombre || "Idea"), idea: String(i.idea || ""), materiales: Array.isArray(i.materiales) ? i.materiales.map(String).slice(0, 6) : [], por_que: String(i.por_que || ""), creado: ahora(), quien: S.yo || "" });
+      }
+      await evento({ proyecto: p.id, tipo: "ideas", texto: `Claude propuso: ${ideas.slice(0, 5).map((i) => i.nombre).join(", ")}.` });
+      avisar("Listo: las ideas quedaron abajo");
+    } catch (e) {
+      const code = e?.code;
+      const z = $("#zonaIdeas");
+      if (z) z.innerHTML = `<div class="aviso" style="margin-top:24px">${code === "not_granted" ? "Para usar esta función hay que permitir que la página consulte a Claude." : code === "rate_limited" ? "Claude está ocupado; probá de nuevo en un rato." : "No salieron las ideas esta vez. Probá de nuevo más tarde."}</div>`;
+      if (code === "not_granted") S.sample = null;
+    }
+  }
+
+  async function descargar(v) {
+    try {
+      const blob = await fetch(foto(v.imagen)).then((r) => r.blob());
+      const ext = (blob.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      const nombre = `${(proyecto(v.proyecto)?.nombre || "taller")}-${v.nombre}`.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      await S.downloads.save({ filename: `${nombre}.${ext}`, data: blob });
+    } catch (e) {
+      if (e?.code === "unavailable") S.downloads = null;
+      if (e?.code && e.code !== "declined" && e.code !== "cancelled") avisar("No se pudo descargar");
+    }
+  }
+
+  // ---------- Eventos ----------
+  document.addEventListener("click", async (ev) => {
+    const tab = ev.target.closest(".menu [data-tab]");
+    if (tab) { S.tab = tab.dataset.tab; render(); window.scrollTo?.(0, 0); return; }
+    const el = ev.target.closest("[data-accion]");
+    if (!el) { if (ev.target.id === "velo") cerrarVentana(); return; }
+    const a = el.dataset.accion;
+    const id = el.dataset.id;
+    try {
+      if (a === "elegir") { S.sel = id; S.tab = "taller"; S.filtro = "propuesta"; render(); }
+      else if (a === "filtro") { S.filtro = el.dataset.f; render(); }
+      else if (a === "hEstado") { S.hEstado = el.dataset.f; render(); }
+      else if (a === "hVista") { S.hVista = el.dataset.f; render(); }
+      else if (a === "abrir") abrirVersion(id);
+      else if (a === "cerrar") cerrarVentana();
+      else if (a === "decidir") abrirDecision(id, el.dataset.estado);
+      else if (a === "cambio") abrirCambio(id);
+      else if (a === "verOriginal") { const p = proyecto(S.sel); if (p?.original) abrirVentana(`<div class="detalle" style="grid-template-columns:1fr"><div class="imagenes"><img src="${foto(p.original)}" alt="Modelo original"></div></div>`); }
+      else if (a === "verImg") {
+        const det = el.closest(".detalle"); const v = version(det.dataset.version); const p = proyecto(v.proyecto);
+        det.querySelectorAll(".conmutador button").forEach((b) => b.setAttribute("aria-pressed", String(b === el)));
+        $("#imgDetalle").src = el.dataset.cual === "original" ? foto(p.original) : foto(v.imagen);
+      }
+      else if (a === "volverARevisar") {
+        const v = version(id); if (!v) return;
+        await S.db.collection("versiones").doc(v.id).update({ estado: "propuesta", motivo: "", decidido: "", decidioPor: "" });
+        await evento({ proyecto: v.proyecto, version: v.id, tipo: "revisar", texto: "" });
+        cerrarVentana(); avisar("Volvió a «para revisar» y salió del cerebro");
+      }
+      else if (a === "descargar") { const v = version(id); if (v) await descargar(v); }
+      else if (a === "nuevoModelo") formularioModelo(null);
+      else if (a === "editarModelo") formularioModelo(proyecto(S.sel));
+      else if (a === "pedirVersiones") formularioPedido(proyecto(S.sel));
+      else if (a === "ideas") { el.disabled = true; await pedirIdeas(proyecto(S.sel)); el.disabled = false; }
+      else if (a === "ideaAPedido") {
+        const i = S.ideas.find((x) => x.id === id); if (!i) return;
+        await pedir(i.proyecto, "", `Dibujar la idea «${i.nombre}»: ${i.idea}${i.materiales?.length ? " Materiales: " + i.materiales.join(", ") + "." : ""}`);
+      }
+      else if (a === "borrarIdea") { await S.db.collection("ideas").doc(id).delete(); }
+      else if (a === "borrarGusto") {
+        const g = S.gusto.find((x) => x.id === id);
+        await S.db.collection("gusto").doc(id).delete();
+        if (g) await evento({ proyecto: "", tipo: "gusto", texto: `Se quitó del cerebro: ${g.texto}` });
+      }
+      else if (a === "borrarPedido") {
+        const x = S.pedidos.find((p) => p.id === id);
+        await S.db.collection("pedidos").doc(id).delete();
+        if (x) await evento({ proyecto: x.proyecto, version: x.version || "", tipo: "nota", texto: `Se canceló el pedido: ${x.texto}` });
+        cerrarVentana();
+      }
+      else if (a === "verPedido") abrirPedido(id);
+      else if (a === "irAModelo") { S.sel = id; S.tab = "taller"; S.filtro = "propuesta"; render(); }
+      else if (a === "salir") { el.disabled = true; await window.tallerWeb?.salir(); }
+      else if (a === "avisoEquipo") {
+        const m = window.tallerWeb.miembros().find((x) => x.email === id);
+        if (m) mostrarAviso(m, false);
+      }
+      else if (a === "quitarAcceso" || a === "devolverAcceso") {
+        const m = window.tallerWeb.miembros().find((x) => x.email === id);
+        if (a === "quitarAcceso" && !confirm(`¿Quitarle el acceso al taller a ${m?.nombre || id}? Se le cierra la sesión y ya no puede entrar. Lo que hizo queda guardado.`)) return;
+        el.disabled = true;
+        await window.tallerWeb.cambiar(id, { activo: a === "devolverAcceso" });
+        avisar(a === "quitarAcceso" ? "Acceso quitado" : "Acceso devuelto: ya puede volver a entrar con su mail");
+        render();
+      }
+      else if (a === "copiarAviso") {
+        const campo = $("#ventana .link-copiar");
+        try { await navigator.clipboard.writeText(campo.value); avisar("Mensaje copiado"); }
+        catch (_) { campo.select(); avisar("Seleccioná el mensaje y copialo"); }
+      }
+    } catch (e) {
+      console.error(e);
+      avisar(e?.mensaje || (e?.code === "not_granted" ? "No tenés permiso para cambiar esto" : "No se pudo guardar; probá de nuevo"));
+    }
+  });
+
+  document.addEventListener("change", async (ev) => {
+    if (ev.target.matches("select[data-rol]")) {
+      const s = ev.target;
+      s.disabled = true;
+      try { await window.tallerWeb.cambiar(s.dataset.rol, { rol: s.value }); avisar("Cambio guardado"); }
+      catch (e) { avisar(e?.mensaje || "No se pudo guardar; probá de nuevo"); }
+      render();
+      return;
+    }
+    if (ev.target.matches("[data-accion='hModelo']")) { S.hModelo = ev.target.value; render(); }
+    if (ev.target.matches("form[data-form='decidir'] input[name='estado']")) {
+      const no = ev.target.value === "descartada";
+      $("#etqPorque").textContent = no ? "¿Por qué no?" : "¿Por qué sí?";
+      ev.target.form.querySelector("textarea").placeholder = no ? "Ej.: el herraje queda pegado encima, no se integra" : "Ej.: el chaguar queda integrado a la cartera";
+    }
+  });
+
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && $("#velo").classList.contains("abierto")) cerrarVentana();
+  });
+
+  document.addEventListener("submit", async (ev) => {
+    const f = ev.target.closest("form[data-form]");
+    if (!f) return;
+    ev.preventDefault();
+    const boton = f.querySelector("button[type='submit']");
+    if (boton) boton.disabled = true;
+    try {
+      const d = new FormData(f);
+      if (f.dataset.form === "decidir") {
+        const v = version(f.dataset.id);
+        await decidir(v, d.get("estado"), d.get("texto"));
+        cerrarVentana();
+      } else if (f.dataset.form === "cambio") {
+        const v = version(f.dataset.id);
+        await pedir(v.proyecto, v.id, String(d.get("texto")).trim());
+        cerrarVentana();
+      } else if (f.dataset.form === "modelo") {
+        if (f.dataset.id) {
+          await S.db.collection("proyectos").doc(f.dataset.id).update({ nombre: String(d.get("nombre")).trim(), temporada: d.get("temporada"), conservar: String(d.get("conservar") || "").trim(), notas: String(d.get("notas") || "").trim() });
+          await evento({ proyecto: f.dataset.id, tipo: "nota", texto: "Se actualizaron los datos del modelo." });
+          avisar("Datos guardados");
+        } else {
+          avisar("Subiendo la foto…");
+          await subirModelo(f);
+        }
+        cerrarVentana();
+      } else if (f.dataset.form === "pedido") {
+        await pedir(S.sel, "", String(d.get("texto")).trim());
+        cerrarVentana();
+      } else if (f.dataset.form === "pedidoLibre") {
+        await pedir(String(d.get("proyecto")), "", String(d.get("texto")).trim());
+        f.reset();
+      } else if (f.dataset.form === "gusto") {
+        const texto = String(d.get("texto")).trim();
+        if (!texto) return;
+        await S.db.collection("gusto").add({ tipo: d.get("tipo"), texto, proyecto: "", version: "", creado: ahora(), quien: S.yo || "" });
+        await evento({ proyecto: "", tipo: "gusto", texto: `${TIPOS_MANUAL[d.get("tipo")]}: ${texto}` });
+        f.reset();
+        avisar("Anotado en el cerebro");
+      } else if (f.dataset.form === "sumar") {
+        const nombre = String(d.get("nombre") || "").trim();
+        const email = String(d.get("email") || "").trim().toLowerCase();
+        if (!nombre || !email) throw { mensaje: "Completá el nombre y el mail" };
+        await window.tallerWeb.sumar({ nombre, email, rol: d.get("rol") });
+        f.reset();
+        render();
+        mostrarAviso({ nombre, email }, true);
+      }
+    } catch (e) {
+      console.error(e);
+      avisar(e?.mensaje || (e?.code === "not_granted" ? "No tenés permiso para esto" : "No se pudo guardar; probá de nuevo"));
+    } finally {
+      if (boton) boton.disabled = false;
+    }
+  });
+
+  // ---------- Nombres de las personas ----------
+  let pidiendo = false;
+  async function resolverNombres() {
+    if (!S.user || pidiendo) return;
+    const ids = [...new Set([...document.querySelectorAll("[data-uid]")].map((e) => e.dataset.uid))].filter((i) => i && i !== "claude" && i !== "chat");
+    const faltan = ids.filter((i) => !(i in S.nombres));
+    if (!faltan.length) return;
+    pidiendo = true;
+    try {
+      const ps = await S.user.profiles(faltan);
+      faltan.forEach((i) => { S.nombres[i] = ps?.[i]?.name || "Alguien del equipo"; });
+      document.querySelectorAll("[data-uid]").forEach((e) => { const u = e.dataset.uid; if (S.nombres[u]) e.textContent = quien(u); });
+    } catch (_) { /* sin nombres */ }
+    pidiendo = false;
+  }
+
+  // ---------- Arranque ----------
+  async function iniciar() {
+    render();
+    const reloj = setTimeout(() => { if (S.listos.size < 6) { S.cargaFallo = !S.db; render(); } }, 10000);
+    const [db, assets, user, sample, downloads] = await Promise.all(["db", "assets", "user", "sample", "downloads"].map((n) => window.claude?.use?.(n).catch(() => null) ?? Promise.resolve(null)));
+    S.db = db; S.assets = assets; S.user = user; S.sample = sample; S.downloads = downloads;
+    if (!db) { clearTimeout(reloj); S.cargaFallo = true; render(); return; }
+    if (user) {
+      try { S.yo = (await user.id()) || ""; } catch (_) { S.yo = ""; }
+      try { S.puede = await user.can("data.write"); } catch (_) { S.puede = null; }
+    }
+    for (const c of ["proyectos", "versiones", "historial", "gusto", "pedidos", "ideas"]) {
+      db.collection(c).onSnapshot((snap) => {
+        S[c] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        S.listos.add(c);
+        if (S.listos.size >= 6) clearTimeout(reloj);
+        render();
+      }, (err) => {
+        console.error(c, err);
+        S.listos.add(c);
+        $("#avisoGeneral").textContent = "Hubo un problema leyendo parte del taller. Recargá la página en un rato.";
+        $("#avisoGeneral").classList.remove("oculto");
+        render();
+      });
+    }
+    window.tallerWeb?.alCambiar(render);
+  }
+  // En la versión web, el taller arranca recién cuando la persona entró con su cuenta.
+  (window.tallerListo || Promise.resolve()).then(iniciar);
+})();
+</script>
+</body>
+</html>
