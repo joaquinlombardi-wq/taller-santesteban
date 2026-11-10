@@ -389,8 +389,12 @@ body.con-acceso .app { visibility: hidden; }
     },
     setItem(k, v) {
       memoriaSesion.set(k, v);
-      try { localStorage.setItem(k, v); } catch (_) { /* queda en la cookie o en memoria */ }
-      if (k === CLAVE_SESION) { try { cookie.poner(k, v); } catch (_) { /* queda en memoria */ } }
+      let lsError = "";
+      try { localStorage.setItem(k, v); } catch (e) { lsError = e?.name || "error"; /* queda en la cookie o en memoria */ }
+      if (k === CLAVE_SESION) {
+        try { cookie.poner(k, v); } catch (_) { /* queda en memoria */ }
+        revisarGuardado(k, v, lsError);
+      }
     },
     removeItem(k) {
       if (k === CLAVE_SESION && !saliendo) avisarServidor({ evento: "borrado", pila: String(new Error().stack || "").replace(/https?:[^\s)]+/g, "").slice(0, 900) });
@@ -399,6 +403,35 @@ body.con-acceso .app { visibility: hidden; }
       if (k === CLAVE_SESION) { try { cookie.borrar(k); } catch (_) { /* nada */ } }
     },
   };
+  // Diagnóstico temporal de la sesión que se pierde al recargar: solo tamaños y nombres de claves, nunca valores.
+  let guardadoAvisado = false;
+  function usoLs() {
+    const claves = [];
+    let total = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i) || "";
+        const n = k.length + (localStorage.getItem(k) || "").length;
+        total += n;
+        claves.push([k.slice(0, 40), n]);
+      }
+    } catch (_) { /* nada */ }
+    claves.sort((a, b) => b[1] - a[1]);
+    return { total, claves: claves.length, grandes: claves.slice(0, 3) };
+  }
+  function revisarGuardado(k, v, lsError) {
+    if (guardadoAvisado) return;
+    guardadoAvisado = true;
+    let lsLeido = false, cookieLeido = false;
+    try { lsLeido = localStorage.getItem(k) === v; } catch (_) { /* nada */ }
+    try { cookieLeido = cookie.leer(k) === v; } catch (_) { /* nada */ }
+    avisarServidor({ evento: "guardado", lsError, lsLeido, cookieLeido, largo: v.length, cookieLargo: document.cookie.length, uso: usoLs() });
+  }
+  window.addEventListener("pagehide", () => {
+    try {
+      localStorage.setItem("taller-al-salir", JSON.stringify({ t: new Date().toISOString(), ls: !!localStorage.getItem(CLAVE_SESION), cookie: cookie.leer(CLAVE_SESION) !== null, memoria: memoriaSesion.has(CLAVE_SESION) }));
+    } catch (_) { /* nada */ }
+  });
   // ¿Este navegador deja guardar la sesión? (se informa en la pantalla de entrada y al servidor, sin datos personales)
   function revisarAlmacen() {
     const d = { ls: "ok", cookies: "ok", sesionLs: false, sesionCookie: false, visitaAnterior: null };
@@ -409,6 +442,7 @@ body.con-acceso .app { visibility: hidden; }
     try { d.sesionLs = !!localStorage.getItem(CLAVE_SESION); } catch (_) { /* nada */ }
     try { d.sesionCookie = cookie.leer(CLAVE_SESION) !== null; } catch (_) { /* nada */ }
     try { d.visitaAnterior = localStorage.getItem("taller-visita"); localStorage.setItem("taller-visita", new Date().toISOString()); } catch (_) { /* nada */ }
+    try { d.alSalir = JSON.parse(localStorage.getItem("taller-al-salir") || "null"); } catch (_) { /* nada */ }
     return d;
   }
   const ALMACEN = revisarAlmacen();
@@ -999,7 +1033,7 @@ body.con-acceso .app { visibility: hidden; }
     if (location.hash.includes("access_token") || location.hash.includes("error")) history.replaceState(null, "", direccion() + location.search);
     if (!sesion && recuerdo()) {
       sesion = await recuperar();
-      avisarServidor({ evento: sesion ? "recuperada" : "no-recuperada", tenia: true });
+      avisarServidor({ evento: sesion ? "recuperada" : "no-recuperada", tenia: true, alAbrir: { sesionLs: ALMACEN.sesionLs, sesionCookie: ALMACEN.sesionCookie, alSalir: ALMACEN.alSalir }, uso: usoLs() });
     }
     if (sesion) recordar(sesion);
     if (!sesion) { pantallaEntrar(botonViejo ? "Ese botón del mail ya se usó o venció. Pedí uno nuevo acá abajo." : ""); return; }
