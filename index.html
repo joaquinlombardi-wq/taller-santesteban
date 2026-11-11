@@ -476,7 +476,7 @@ button.inicio-card:hover { border-color: var(--tx); }
 .barrita.fija i { animation: none; transition: width .4s ease; }
 .filtro-marcas { margin: 0 0 20px; max-width: 280px; }
 .novedades { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 26px 16px; }
-.nove { display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: var(--tx); }
+.nove { display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: var(--tx); min-width: 0; }
 .nove-foto { aspect-ratio: 1; background: #F4F4F4; display: grid; place-items: center; overflow: hidden; position: relative; }
 .nove-foto img { width: 100%; height: 100%; object-fit: contain; }
 .nove .etiqueta { margin-top: 6px; }
@@ -490,6 +490,26 @@ button.inicio-card:hover { border-color: var(--tx); }
 .tendencia div { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .tendencia span { color: var(--mu); font-size: 12px; white-space: nowrap; }
 .tendencia .barrita { margin: 0; }
+.periodos { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 18px; }
+.periodos button { border: 1px solid var(--li); background: none; color: var(--mu); padding: 8px 12px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.periodos button[aria-pressed="true"] { border-color: var(--tx); color: var(--tx); }
+.semana { font-weight: 400; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; margin: 26px 0 12px; display: flex; gap: 8px; align-items: baseline; }
+.semana:first-of-type { margin-top: 4px; }
+.semana small { color: var(--mu); letter-spacing: 0; }
+.nove-link { display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: var(--tx); }
+.nove-disenar { margin-top: 6px; border: 1px solid var(--li); background: none; color: var(--tx); padding: 9px 6px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+.nove-disenar:hover { border-color: var(--tx); }
+.tend-fotos .tend-foto { flex: 0 0 78px; display: flex; flex-direction: column; gap: 4px; color: var(--mu); min-width: 0; border: 0; background: none; padding: 0; cursor: pointer; text-align: left; font: inherit; }
+.insp-tend { display: flex; flex-wrap: wrap; gap: 6px; }
+.insp-tend .var-op { padding: 8px 10px; font-size: 12px; }
+.insp-fotos { display: flex; gap: 8px; overflow-x: auto; padding: 3px; scrollbar-width: none; }
+.insp-fotos::-webkit-scrollbar { display: none; }
+.insp-foto { position: relative; flex: 0 0 72px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; color: var(--mu); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; }
+.insp-foto input { position: absolute; opacity: 0; pointer-events: none; }
+.insp-foto img, .insp-foto .sin { width: 72px; height: 72px; object-fit: cover; background: #F4F4F4; outline: 1px solid var(--li); display: grid; place-items: center; color: var(--mu); }
+.insp-foto .sin { background: none; }
+.insp-foto:has(input:checked) img, .insp-foto:has(input:checked) .sin { outline: 2px solid var(--tx); }
+.insp-foto small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tend-resumen { border: 1px solid var(--tx); padding: 14px 16px; margin: 0 0 18px; max-width: 640px; }
 .tend-resumen p { margin: 6px 0 0; font-size: 15px; line-height: 1.45; }
 .tendencia .tend-fotos { justify-content: flex-start; align-items: flex-start; gap: 8px; overflow-x: auto; padding: 2px 0; scrollbar-width: none; }
@@ -1042,6 +1062,16 @@ button.inicio-card:hover { border-color: var(--tx); }
       }
       return data;
     },
+    // Foto de Inspiración como modelo nuevo: el dibujante la trae (si su web lo permite) y devuelve el id de la copia
+    async copiarInspiracion(novedadId) {
+      const { data, error } = await sb.functions.invoke("dibujar", { body: { accion: "inspiracion", novedad: novedadId } });
+      if (error || !data?.foto) {
+        let d = {};
+        try { d = await error?.context?.json?.(); } catch (_) { /* sin detalle */ }
+        throw Object.assign(new Error(d?.error || error?.message || "sin foto"), { mensaje: d?.error === "no_permite" ? "Esa foto no se puede usar: su web no deja que la tomen programas. Probá con otra." : d?.error === "permiso" ? "No tenés permiso para pedir diseños." : "No se pudo traer la foto; probá de nuevo." });
+      }
+      return data.foto;
+    },
     // Borrador de la ficha técnica: el dibujante mira la foto del diseño (devuelve null si no pudo)
     async armarFicha(versionId) {
       const { data, error } = await sb.functions.invoke("dibujar", { body: { accion: "ficha", version: versionId } });
@@ -1333,7 +1363,7 @@ button.inicio-card:hover { border-color: var(--tx); }
   };
   const S = {
     proyectos: [], versiones: [], historial: [], gusto: [], pedidos: [], ideas: [], fichas: [], marcas: [], novedades: [], radar: [],
-    revision: null, editGusto: null, iTab: null, iMarca: "", fichaSel: null, fichaSucia: false, radarVistas: new Set(), forzar: false, vistaPendiente: false,
+    revision: null, editGusto: null, iTab: null, iMarca: "", iPeriodo: "mes", fichaSel: null, fichaSucia: false, radarVistas: new Set(), forzar: false, vistaPendiente: false,
     listos: new Set(), tab: "inicio", sel: null, filtro: "propuesta", hEstado: "todos", hModelo: "", hVista: "disenos",
     db: null, assets: null, user: null, sample: null, downloads: null, yo: "", puede: null, nombres: {}, cargaFallo: false
   };
@@ -1845,11 +1875,49 @@ button.inicio-card:hover { border-color: var(--tx); }
     </form>`, true);
   }
 
+  // Con una foto de Inspiración: un modelo nuevo de Santesteban, o una versión de uno que ya existe
+  function abrirInspiracion(id) {
+    const n = S.novedades.find((x) => x.id === id);
+    if (!n) return;
+    const a = n.analisis?.por === "foto" || n.analisis?.por === "nombre" ? n.analisis : {};
+    const herraje = (a.herrajes || []).find((h) => h !== "sin herrajes");
+    const opciones = [
+      ["forma", `La forma${a.tipo && a.tipo !== "otro" ? ` (${a.tipo})` : ""}`, true],
+      ...((a.colores || [])[0] ? [["color", `El color ${a.colores[0]}`, false]] : []),
+      ...((a.materiales || [])[0] ? [["material", `El material (${a.materiales[0]})`, false]] : []),
+      ...(herraje ? [["herrajes", `Los herrajes (${herraje})`, false]] : []),
+    ];
+    const ps = proyectosOrdenados();
+    abrirVentana(`<form class="formulario" data-form="disenarCon" data-id="${esc(n.id)}">
+      <h2>Diseñar con esta inspiración</h2>
+      <div class="quien-decide"><img src="${esc(n.foto)}" alt="" referrerpolicy="no-referrer" style="mix-blend-mode:normal;object-fit:cover"><div><b style="font-weight:400">${esc(n.marcaNombre || "")}</b><p>${esc(n.nombre || "")}${n.medio ? ` · ${esc(n.medio)}` : ""} · <a class="enlace" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">ver original</a></p></div></div>
+      <div class="var-paso"><span class="etiqueta">1 · ¿Qué tomar de esta foto?</span>
+        <div class="insp-tend">${opciones.map(([k, tx, on]) => `<label class="var-op"><input type="checkbox" name="toma" value="${k}" data-texto="${esc(tx)}" ${on ? "checked" : ""}><span>${esc(tx)}</span></label>`).join("")}</div>
+        <input type="text" name="texto" maxlength="300" placeholder="Algo más (opcional): ej. el acolchado, pero en chaguar" aria-label="Algo más que tomar o evitar">
+      </div>
+      <div class="var-paso"><span class="etiqueta">2 · ¿Para qué?</span>
+        <select name="destino" aria-label="Para qué modelo"><option value="">Un modelo nuevo de Santesteban</option>${ps.map((p) => `<option value="${esc(p.id)}">Una versión de «${esc(p.nombre)}»</option>`).join("")}</select>
+        <input type="text" name="nombre" maxlength="80" value="${esc(`Inspiración ${n.marcaNombre || ""}`.trim())}" aria-label="Nombre del modelo nuevo" placeholder="Nombre del modelo nuevo">
+      </div>
+      <button class="btn prim grande" type="submit">Pedir el diseño</button>
+      <p>${mayus(DIBUJA)} lo dibuja al estilo Santesteban, siguiendo el cerebro de la diseñadora y sin logos ni detalles que delaten a la otra marca. Llega en uno o dos minutos a «Para revisar».</p>
+    </form>`, true);
+  }
+
   function formularioPedido(p) {
+    // Para tomar algo de Inspiración: las tendencias del período y las últimas fotos anotadas
+    const t = window.tallerWeb ? tendencias() : { filas: [] };
+    const fotosInsp = window.tallerWeb ? S.novedades.filter((n) => n.foto && n.analisis?.por === "foto").sort((a, b) => String(b.visto || "").localeCompare(String(a.visto || ""))).slice(0, 12) : [];
+    const conInsp = t.filas.length || fotosInsp.length;
     abrirVentana(`<form class="formulario" data-form="pedido">
       <h2>Pedir versiones nuevas</h2>
       <p>Para «${esc(p.nombre)}». Queda en «Pedidos de versiones»; ${DIBUJA} lo dibuja siguiendo el cerebro de la diseñadora.</p>
-      <label>¿Qué querés ver?<textarea name="texto" required maxlength="800" placeholder="Ej.: dos versiones más en bordó, con asta clara y sin chaguar"></textarea></label>
+      <label>¿Qué querés ver?<textarea name="texto" ${conInsp ? "" : "required"} maxlength="800" placeholder="Ej.: dos versiones más en bordó, con asta clara y sin chaguar"></textarea></label>
+      ${conInsp ? `<div class="var-paso"><span class="etiqueta">Tomar de Inspiración (opcional)</span>
+        ${t.filas.length ? `<div class="insp-tend">${t.filas.slice(0, 10).map((f) => `<label class="var-op"><input type="checkbox" name="tend" value="${esc(f.k)}"><span>${esc(f.k)}</span></label>`).join("")}</div>` : ""}
+        ${fotosInsp.length ? `<div class="insp-fotos" role="radiogroup" aria-label="Foto de inspiración"><label class="insp-foto"><input type="radio" name="insp" value="" checked><span class="sin">Ninguna</span><small>Sin foto</small></label>${fotosInsp.map((n) => `<label class="insp-foto" title="${esc(`${n.marcaNombre || ""} · ${n.nombre || ""}`)}"><input type="radio" name="insp" value="${esc(n.id)}"><img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer"><small>${esc(n.marcaNombre || "")}</small></label>`).join("")}</div>` : ""}
+        <input type="text" name="toma" maxlength="300" placeholder="¿Qué tomar de ahí? Ej.: el herraje dorado y el acolchado, en chaguar" aria-label="Qué tomar de la inspiración">
+      </div>` : ""}
       <div class="acciones"><button class="btn prim" type="submit">Enviar pedido</button><button class="btn" type="button" data-accion="cerrar">Cancelar</button></div>
     </form>`, true);
   }
@@ -2048,8 +2116,11 @@ button.inicio-card:hover { border-color: var(--tx); }
   const mayus = (t) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : "");
   const TIPO_PLURAL = { "cartera de mano": "carteras de mano", tote: "totes", bandolera: "bandoleras", hobo: "hobos", bucket: "buckets", baguette: "baguettes", clutch: "clutches", mochila: "mochilas", "riñonera": "riñoneras", billetera: "billeteras", "cinturón": "cinturones", calzado: "calzado" };
   const ICONO_ACT = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></svg>`;
+  // Novedades y tendencias se miran por período: la última semana, el último mes o los últimos 3 meses
+  const PERIODOS = { semana: ["Última semana", 7, "la última semana"], mes: ["Último mes", 30, "el último mes"], trimestre: ["Últimos 3 meses", 90, "los últimos 3 meses"] };
+  const periodo = () => PERIODOS[S.iPeriodo] || PERIODOS.mes;
   function tendencias() {
-    const desde = Date.now() - 60 * DIA;
+    const desde = Date.now() - periodo()[1] * DIA;
     const novs = S.novedades.filter((n) => (n.analisis?.por === "foto" || n.analisis?.por === "nombre") && Date.parse(n.visto || 0) > desde);
     const marcas = new Set(novs.map((n) => n.marca));
     const cuenta = new Map();
@@ -2130,7 +2201,7 @@ button.inicio-card:hover { border-color: var(--tx); }
           + (otras.length ? ` No se pudo leer: ${juntar(otras.map(([m, x]) => `${esc(m.nombre)} (${MOTIVO[x.estado] || "no se pudo leer su web"})`))}.` : "")
           + (tendencias().filas.length ? ` <a class="enlace" data-accion="iTab" data-f="tendencias">Ver tendencias</a>` : nn ? ` <a class="enlace" data-accion="verNotas">Ver las notas</a>` : "");
       }
-      return `<div class="radar-barra">${boton}<span class="estado">${est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}` : "Todavía no se actualizó."}</span>
+      return `<div class="radar-barra">${boton}<span class="estado">${est?.terminado ? `Última vez: ${hace(est.terminado)} · ${ms.length} marca${ms.length === 1 ? "" : "s"}${Date.now() - Date.parse(est.terminado) > 7 * DIA ? " · conviene actualizar una vez por semana" : ""}` : "Todavía no se actualizó. Conviene hacerlo una vez por semana."}</span>
         ${resumen ? `<p class="radar-listo">${ICONO.ok}<span>${resumen}</span></p>` : ""}
         ${!recien && est?.nota ? `<p class="estado" style="flex-basis:100%">${esc(est.nota)}</p>` : ""}</div>`;
     }
@@ -2185,6 +2256,7 @@ button.inicio-card:hover { border-color: var(--tx); }
     const cabeza = `<div class="cabeza"><h1>Inspiración</h1><p>El radar de las marcas que seguís: qué están sacando y qué se repite entre ellas. Sirve para leer tendencias (colores, materiales, formas), no para copiar modelos.</p></div>
       <div class="filtros" role="group" aria-label="Qué ver">${pest("tendencias", "Tendencias")}${pest("novedades", `Novedades · ${cuantas}`)}${pest("marcas", `Marcas · ${ms.length}`)}</div>`;
     const barra = ms.length ? panelRadar(est, ms) : "";
+    const periodos = `<div class="periodos" role="group" aria-label="Período">${Object.entries(PERIODOS).map(([k, [nombre]]) => `<button data-accion="iPeriodo" data-f="${k}" aria-pressed="${(S.iPeriodo || "mes") === k}">${nombre}</button>`).join("")}</div>`;
     if (tab === "marcas") {
       const fila = (m) => {
         const r = est?.porMarca?.[m.id];
@@ -2203,6 +2275,7 @@ button.inicio-card:hover { border-color: var(--tx); }
     if (tab === "tendencias") {
       const t = tendencias();
       const soloNotas = S.novedades.length > 0 && S.novedades.every((n) => n.fuente === "nota");
+      if (!t.filas.length && S.novedades.some((n) => n.analisis?.por === "foto" || n.analisis?.por === "nombre")) return cabeza + barra + periodos + `<div class="vacio">No hay tendencias de ${periodo()[2]}. Probá con un período más largo o tocá «Actualizar información».</div>`;
       if (!t.filas.length) return cabeza + barra + `<div class="vacio">${soloNotas ? "Las tendencias salen de los productos de las marcas, de las carteras de sus desfiles y de las notas de revistas que muestran carteras. Por ahora solo hay notas sin carteras: tocá «Actualizar información» para traer las carteras de sus desfiles." : S.novedades.length ? "Todavía no hay suficientes novedades anotadas. Se completan solas en las próximas actualizaciones." : "Tocá «Actualizar información» para traer las novedades de las marcas."}</div>`;
       const max = Math.max(...t.filas.map((f) => f.c));
       // Hasta 6 fotos por tendencia, primero una de cada marca
@@ -2215,12 +2288,17 @@ button.inicio-card:hover { border-color: var(--tx); }
           if (!fila.length) break;
           elegidas.push(...fila);
         }
-        return elegidas.slice(0, 6).map((n) => `<a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" title="${esc(`${n.marcaNombre || ""} · ${n.nombre || ""}`)}"><img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.remove()"><small>${esc(n.marcaNombre || "")}</small></a>`).join("");
+        const puede = escribe() && window.tallerWeb;
+        return elegidas.slice(0, 6).map((n) => {
+          const dentro = `<img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.remove()"><small>${esc(n.marcaNombre || "")}</small>`;
+          const titulo = esc(`${n.marcaNombre || ""} · ${n.nombre || ""}${puede ? " · tocá para diseñar con esto" : ""}`);
+          return puede ? `<button type="button" class="tend-foto" data-accion="disenarCon" data-id="${esc(n.id)}" title="${titulo}">${dentro}</button>` : `<a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" title="${titulo}">${dentro}</a>`;
+        }).join("");
       };
       const frase = fraseTendencia(t);
-      return cabeza + barra + (frase ? `<div class="tend-resumen"><span class="etiqueta">Para inspirar</span><p>Lo que más se repite${t.nombres.length ? ` en ${esc(juntar(t.nombres))}` : ""}: ${esc(frase)}.</p></div>` : "")
+      return cabeza + barra + periodos + (frase ? `<div class="tend-resumen"><span class="etiqueta">Para inspirar</span><p>Lo que más se repite${t.nombres.length ? ` en ${esc(juntar(t.nombres))}` : ""}: ${esc(frase)}.</p></div>` : "")
         + `<div class="tendencias">${t.filas.map((f) => `<div class="tendencia"><div><b style="font-weight:400">${esc(f.k)}</b><span>${f.c} de ${t.marcas} marca${t.marcas === 1 ? "" : "s"} · ${f.n} foto${f.n === 1 ? "" : "s"}</span></div><div class="barrita fija"><i style="width:${Math.round(100 * f.c / max)}%"></i></div><div class="tend-fotos">${fotos(f)}</div></div>`).join("")}</div>
-        <p class="estado" style="margin-top:14px">Sale de ${juntar([t.novedades ? `${t.novedades} producto${t.novedades === 1 ? "" : "s"} de sus tiendas` : "", t.desfiles ? `${t.desfiles} foto${t.desfiles === 1 ? "" : "s"} de desfiles` : "", t.notas ? `${t.notas} nota${t.notas === 1 ? "" : "s"} de revistas` : ""].filter(Boolean))} de los últimos 60 días.${t.marcas < 3 ? " Con más marcas, las tendencias se leen mejor." : ""}</p>`;
+        <p class="estado" style="margin-top:14px">Sale de ${juntar([t.novedades ? `${t.novedades} producto${t.novedades === 1 ? "" : "s"} de sus tiendas` : "", t.desfiles ? `${t.desfiles} foto${t.desfiles === 1 ? "" : "s"} de desfiles` : "", t.notas ? `${t.notas} nota${t.notas === 1 ? "" : "s"} de revistas` : ""].filter(Boolean))} de ${periodo()[2]}.${t.marcas < 3 ? " Con más marcas, las tendencias se leen mejor." : ""}</p>`;
     }
     const conNovedades = ms.filter((m) => S.novedades.some((n) => n.marca === m.id));
     const notasTodas = S.novedades.filter((n) => n.fuente === "nota");
@@ -2230,7 +2308,8 @@ button.inicio-card:hover { border-color: var(--tx); }
     if (SOLO[S.iMarca] ? !S.novedades.some(SOLO[S.iMarca]) : S.iMarca && !conNovedades.some((m) => m.id === S.iMarca)) S.iMarca = "";
     const opcion = (v, texto) => `<option value="${esc(v)}" ${S.iMarca === v ? "selected" : ""}>${texto}</option>`;
     const filtro = conNovedades.length > 1 || tipos > 1 ? `<select class="filtro-marcas" data-accion="iMarca" aria-label="Qué novedades ver">${opcion("", "Todas las marcas")}${tipos > 1 && deDesfiles.length ? opcion("@desfiles", `Solo desfiles · ${deDesfiles.length}`) : ""}${tipos > 1 && notasTodas.length ? opcion("@notas", `Solo notas de revistas · ${new Set(notasTodas.map((n) => n.link)).size}`) : ""}${conNovedades.map((m) => opcion(m.id, `${esc(m.nombre)} · ${S.novedades.filter((n) => n.marca === m.id).length}`)).join("")}</select>` : "";
-    const elegidas = S.novedades.filter((n) => !S.iMarca || (SOLO[S.iMarca] ? SOLO[S.iMarca](n) : n.marca === S.iMarca))
+    const desdeP = Date.now() - periodo()[1] * DIA;
+    const elegidas = S.novedades.filter((n) => (!S.iMarca || (SOLO[S.iMarca] ? SOLO[S.iMarca](n) : n.marca === S.iMarca)) && Date.parse(n.visto || 0) > desdeP)
       .sort((a, b) => String(b.visto || "").localeCompare(String(a.visto || "")) || String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
     // Una nota que nombra a varias marcas se muestra una sola vez, con todas
     const porLink = new Map();
@@ -2253,10 +2332,10 @@ button.inicio-card:hover { border-color: var(--tx); }
       const notas = [a.tipo && a.tipo !== "otro" ? a.tipo : "", (a.colores || [])[0] || "", (a.materiales || [])[0] || ""].filter(Boolean).join(" · ");
       const sello = nota ? `<span class="sello-nota">Nota</span>` : desfile ? `<span class="sello-nota">Desfile</span>` : nueva(n) ? `<span class="sello-nuevo">Nuevo</span>` : "";
       const debajo = nota || desfile ? `${n.medio || "Revista"}${n.fecha ? ` · ${fecha(n.fecha)}` : ""}` : precioTexto(n);
-      return `<a class="nove${nota ? " nota" : desfile ? " pasarela" : ""}${aparece ? " aparece" : ""}" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+      return `<div class="nove${nota ? " nota" : desfile ? " pasarela" : ""}${aparece ? " aparece" : ""}"><a class="nove-link" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
         <span class="nove-foto">${n.foto ? `<img src="${esc(n.foto)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}${sello}</span>
         <span class="etiqueta">${esc((n.marcasNota || [n.marcaNombre]).filter(Boolean).join(" · "))}</span><b>${esc(n.nombre)}</b>
-        ${debajo ? `<small>${esc(debajo)}</small>` : ""}${!n.analisis ? (andando ? `<small class="anotando" style="${fase(1400)}" aria-label="Anotando"></small>` : "") : notas ? `<small>${esc(notas)}</small>` : ""}</a>`;
+        ${debajo ? `<small>${esc(debajo)}</small>` : ""}${!n.analisis ? (andando ? `<small class="anotando" style="${fase(1400)}" aria-label="Anotando"></small>` : "") : notas ? `<small>${esc(notas)}</small>` : ""}</a>${escribe() && window.tallerWeb && n.foto ? `<button class="nove-disenar" data-accion="disenarCon" data-id="${esc(n.id)}">Diseñar con esto</button>` : ""}</div>`;
     };
     const sinNovedades = () => {
       if (andando) return "Leyendo las webs de las marcas…";
@@ -2264,7 +2343,15 @@ button.inicio-card:hover { border-color: var(--tx); }
       const r = resultadoRadar(est, ms);
       return "Todavía no hay novedades. Volvé a actualizar más adelante.";
     };
-    return cabeza + barra + filtro + (novs.length ? `<div class="novedades">${novs.map(tarjeta).join("")}</div>` : `<div class="vacio">${sinNovedades()}</div>`);
+    // Agrupadas por semana (de lunes a domingo), de la más nueva a la más vieja
+    const lunes = (iso) => { const d = new Date(iso || 0); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+    const hoyL = lunes(new Date().toISOString());
+    const tituloSemana = (l) => { const atras = Math.round((hoyL - l) / (7 * DIA)); return atras <= 0 ? "Esta semana" : atras === 1 ? "La semana pasada" : `Semana del ${new Date(l).toLocaleDateString("es-AR", { day: "numeric", month: "short" })}`; };
+    const semanas = new Map();
+    for (const n of novs) { const l = lunes(n.visto); if (!semanas.has(l)) semanas.set(l, []); semanas.get(l).push(n); }
+    const lista = [...semanas].map(([l, xs]) => `<h3 class="semana">${tituloSemana(l)} <small>${xs.length}</small></h3><div class="novedades">${xs.map(tarjeta).join("")}</div>`).join("");
+    const vacioPeriodo = S.novedades.length ? `No hay novedades de ${periodo()[2]}${S.iMarca ? " con ese filtro" : ""}. Probá con un período más largo o tocá «Actualizar información».` : sinNovedades();
+    return cabeza + barra + periodos + filtro + (novs.length ? lista : `<div class="vacio">${vacioPeriodo}</div>`);
   }
 
   // ---------- Ventas (con Tienda Nube) ----------
@@ -2624,6 +2711,8 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
       else if (a === "fichaImprimir") window.print();
       else if (a === "iTab") { S.iTab = el.dataset.f; render(); }
       else if (a === "verNotas") { S.iTab = "novedades"; S.iMarca = "@notas"; render(); }
+      else if (a === "iPeriodo") { S.iPeriodo = el.dataset.f; render(); }
+      else if (a === "disenarCon") abrirInspiracion(id);
       else if (a === "actualizarRadar") {
         el.disabled = true;
         try { const r = await window.tallerWeb.actualizarRadar(); avisar(r?.ya ? "Ya se está actualizando" : "Actualizando: puede tardar unos minutos"); }
@@ -2660,6 +2749,10 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
     }
     if (ev.target.matches("[data-accion='hModelo']")) { S.hModelo = ev.target.value; render(); }
     if (ev.target.matches("[data-accion='iMarca']")) { S.iMarca = ev.target.value; render(); }
+    if (ev.target.matches("form[data-form='disenarCon'] select[name='destino']")) {
+      const campo = ev.target.form.querySelector("input[name='nombre']");
+      if (campo) campo.hidden = !!ev.target.value;
+    }
     if (ev.target.matches("form[data-form='variaciones'] input[name='cambia']")) {
       $("#varOpciones").innerHTML = opcionesVariar(ev.target.value);
       contarVariaciones(ev.target.form);
@@ -2719,8 +2812,50 @@ Respondé solo con JSON, un array de 3 objetos con estas claves: "nombre" (corto
         }
         cerrarVentana();
       } else if (f.dataset.form === "pedido") {
-        await pedir(S.sel, "", String(d.get("texto")).trim());
+        const tend = d.getAll("tend").map(String);
+        const nv = S.novedades.find((x) => x.id === String(d.get("insp") || ""));
+        const toma = String(d.get("toma") || "").trim();
+        const texto = String(d.get("texto") || "").trim();
+        if (!texto && !tend.length && !nv && !toma) throw { mensaje: "Escribí qué querés ver, o elegí algo de Inspiración" };
+        const partes = [
+          texto,
+          tend.length ? `Tomar de las tendencias: ${juntar(tend.map((x) => x.toLowerCase()))}.` : "",
+          nv ? `Tomar de la foto de ${nv.marcaNombre || "otra marca"} (${nv.nombre || nv.medio || "inspiración"}): ${toma || "su estilo"}.` : toma ? `Tomar: ${toma}.` : "",
+        ].filter(Boolean);
+        await pedir(S.sel, "", partes.join(" "), tend.length || nv || toma ? { inspiracion: { tendencias: tend, novedad: nv?.id || "", marca: nv?.marcaNombre || "", nombre: nv?.nombre || "", toma } } : {});
         cerrarVentana();
+      } else if (f.dataset.form === "disenarCon") {
+        const nv = S.novedades.find((x) => x.id === f.dataset.id);
+        if (!nv) throw { mensaje: "Esa inspiración ya no está" };
+        const marcadas = [...f.querySelectorAll("input[name='toma']:checked")];
+        const toma = marcadas.map((c) => c.value);
+        const extra = String(d.get("texto") || "").trim();
+        if (!toma.length && !extra) throw { mensaje: "Elegí qué tomar de la foto, o escribilo" };
+        const queToma = [juntar(marcadas.map((c) => String(c.dataset.texto || "").toLowerCase())), extra].filter(Boolean).join("; ");
+        const origen = `${nv.marcaNombre || "otra marca"} (${nv.nombre || nv.medio || "inspiración"})`;
+        const destino = String(d.get("destino") || "");
+        if (destino) {
+          const p = proyecto(destino);
+          await pedir(destino, "", `Una versión de «${p?.nombre || ""}» que tome de la foto de ${origen}: ${queToma}.`, { inspiracion: { tendencias: [], novedad: nv.id, marca: nv.marcaNombre || "", nombre: nv.nombre || "", toma: queToma } });
+          cerrarVentana();
+          S.sel = destino;
+        } else {
+          avisar("Trayendo la foto…");
+          const idFoto = await window.tallerWeb.copiarInspiracion(nv.id);
+          const nombre = String(d.get("nombre") || "").trim() || `Inspiración ${nv.marcaNombre || ""}`.trim();
+          const ref = await S.db.collection("proyectos").add({
+            nombre, original: idFoto, temporada: "Todo el año", conservar: mayus(queToma), notas: "",
+            inspiracion: { novedad: nv.id, marca: nv.marcaNombre || "", nombre: nv.nombre || "", medio: nv.medio || "", link: nv.link || "", toma },
+            creado: ahora(), creadoPor: S.yo || "", orden: Date.now(),
+          });
+          await evento({ proyecto: ref.id, tipo: "subida", texto: `Modelo nuevo desde Inspiración: ${origen}.` });
+          await pedir(ref.id, "", `Primeras versiones de un diseño nuevo de Santesteban inspirado en la foto de ${origen}. Tomar: ${queToma}.`);
+          cerrarVentana();
+          S.sel = ref.id;
+        }
+        S.filtro = "propuesta";
+        S.tab = "taller";
+        render();
       } else if (f.dataset.form === "pedidoLibre") {
         await pedir(String(d.get("proyecto")), "", String(d.get("texto")).trim());
         f.reset();
